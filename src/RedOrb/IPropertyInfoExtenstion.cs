@@ -1,7 +1,7 @@
 ﻿using Carbunql.Values;
 using System.Reflection;
 
-namespace RedOrb.Extensions;
+namespace RedOrb;
 
 internal static class IPropertyInfoExtenstion
 {

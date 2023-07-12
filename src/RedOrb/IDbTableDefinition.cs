@@ -4,7 +4,6 @@ using Carbunql.Building;
 using Carbunql.Values;
 using Cysharp.Text;
 using RedOrb;
-using RedOrb.Extensions;
 using RedOrb.Mapping;
 
 namespace RedOrb;

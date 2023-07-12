@@ -1,7 +1,6 @@
 ﻿using Carbunql.Building;
 using Microsoft.Extensions.Logging;
 using RedOrb;
-using RedOrb.Extensions;
 using Xunit.Abstractions;
 
 namespace PostgresSample;
@@ -53,7 +52,7 @@ public class Test
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		blog = DbAccessor.Load<Blog>(cn, (x) =>
+		blog = cn.Load<Blog>(x =>
 		{
 			x.Where(x.FromClause!, "blog_id").Equal(id);
 		}).First();

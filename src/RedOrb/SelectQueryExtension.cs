@@ -4,9 +4,9 @@ using Carbunql.Clauses;
 using Carbunql.Values;
 using RedOrb.Mapping;
 
-namespace RedOrb.Extensions;
+namespace RedOrb;
 
-public static class SelectQueryExtension
+internal static class SelectQueryExtension
 {
 	public static void AddSelectPrimarykeyColumns(this SelectQuery sq, DbTableDefinition def, TypeMap map)
 	{
