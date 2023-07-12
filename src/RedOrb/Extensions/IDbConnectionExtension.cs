@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Logging;
+using System.Collections;
 using System.Data;
+using System.Threading;
 
 namespace RedOrb.Extensions;
 
@@ -56,17 +58,54 @@ public static class IDbConnectionExtension
 		executor.Execute(q, instance);
 	}
 
-	public static void Delete<T>(this IDbConnection connection, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
+
+
+	public static void Delete<T>(this IDbConnection connection, IEnumerable<T> instances)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Delete(def, instance, placeholderIdentifer, Logger, timeout);
+
+		foreach (var instance in instances)
+		{
+			connection.DeleteByDefinition(instance, def);
+		}
 	}
 
-	public static void Delete<T>(this IDbConnection connection, IDbTableDefinition tabledef, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
+	public static void Delete<T>(this IDbConnection connection, T instance)
 	{
-		var q = tabledef.ToDeleteQuery(instance, placeholderIdentifer);
+		var def = ObjectRelationMapper.FindFirst<T>();
+		connection.DeleteByDefinition(instance, def);
+	}
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = Logger, Timeout = timeout };
+	public static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
+	{
+		var q = def.ToDeleteQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
+
+		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
 		executor.Execute(q);
+
+		foreach (var idnetifer in def.ChildIdentifers)
+		{
+			var children = GetChildren(instance, idnetifer);
+			var childdef = ObjectRelationMapper.FindFirst(children.GenericType);
+			foreach (var child in children.Items)
+			{
+				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(DeleteByDefinition))!.MakeGenericMethod(children.GenericType);
+				deleteMethod.Invoke(null, new[] { connection, child, childdef });
+			}
+		}
+	}
+
+	private static (Type GenericType, IEnumerable Items) GetChildren<T>(T instance, string idnetifer)
+	{
+		var prop = idnetifer.ToPropertyInfo<T>();
+		var collectionType = prop.PropertyType;
+
+		if (!collectionType.IsGenericType) throw new NotSupportedException();
+
+		Type genericType = collectionType.GenericTypeArguments[0];
+
+		var children = (IEnumerable)prop.GetValue(instance)!;
+
+		return (genericType, children);
 	}
 }

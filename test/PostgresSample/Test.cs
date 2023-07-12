@@ -70,11 +70,11 @@ public class Test
 		var cache = blog.Posts.ToList();
 		blog.Posts.RemoveAt(0);
 		DbAccessor.Save(cn, blog);
-		DbAccessor.Delete(cn, cache.Where(x => !blog.Posts.Contains(x)));
+		cn.Delete(cache.Where(x => !blog.Posts.Contains(x)));
 
 		// Delete
 		Logger.LogInformation("Delete the blog");
-		DbAccessor.Delete(cn, blog);
+		cn.Delete(blog);
 
 		trn.Commit();
 	}

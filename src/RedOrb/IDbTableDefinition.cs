@@ -18,6 +18,8 @@ public interface IDbTableDefinition : IDbTable
 	Type? Type { get; }
 
 	List<DbParentRelationDefinition> ParentRelations { get; }
+
+	List<string> ChildIdentifers { get; }
 }
 
 public static class IDbTableDefinitionExtention
