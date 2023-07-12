@@ -48,7 +48,7 @@ public class Test
 		// Create
 		Logger.LogInformation("Inserting a new blog");
 		var blog = new Blog { Url = "http://blogs.msdn.com/adonet" };
-		DbAccessor.Save(cn, blog);
+		cn.Save(blog);
 		var id = blog.BlogId!.Value;
 
 		// Read
@@ -63,13 +63,12 @@ public class Test
 		blog.Url = "https://devblogs.microsoft.com/dotnet";
 		blog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" });
 		blog.Posts.Add(new Post { Title = "Hello RedOrb", Content = "I wrote an app using RedOrb!" });
-		DbAccessor.Save(cn, blog);
+		cn.Save(blog);
 
 		// Remove Update
 		Logger.LogInformation("Remove part of post");
 		var cache = blog.Posts.ToList();
 		blog.Posts.RemoveAt(0);
-		DbAccessor.Save(cn, blog);
 		cn.Delete(cache.Where(x => !blog.Posts.Contains(x)));
 
 		// Delete

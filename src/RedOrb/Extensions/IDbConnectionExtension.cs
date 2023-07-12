@@ -1,8 +1,6 @@
 ﻿using Dapper;
-using Microsoft.Extensions.Logging;
 using System.Collections;
 using System.Data;
-using System.Threading;
 
 namespace RedOrb.Extensions;
 
@@ -20,17 +18,59 @@ public static class IDbConnectionExtension
 		foreach (var item in tabledef.ToCreateIndexCommandTexts()) connection.Execute(item);
 	}
 
-	public static void Insert<T>(this IDbConnection connection, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
+	public static void Save<T>(this IDbConnection connection, T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Insert(def, instance, placeholderIdentifer, Logger, timeout);
+
+		var seq = def.GetSequenceOrDefault() ?? throw new NotSupportedException("AutoNumber column not found.");
+		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
+		if (id == null)
+		{
+			connection.Insert(instance);
+		}
+		else
+		{
+			connection.Update(instance);
+		}
 	}
 
-	public static void Insert<T>(this IDbConnection connection, IDbTableDefinition tabledef, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
+	public static void Insert<T>(this IDbConnection connection, T instance)
 	{
-		var iq = tabledef.ToInsertQuery(instance, placeholderIdentifer);
+		var def = ObjectRelationMapper.FindFirst<T>();
+		connection.InsertByDefinition(instance, def);
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = Logger, Timeout = timeout };
+		foreach (var idnetifer in def.ChildIdentifers)
+		{
+			var children = GetChildren(instance, idnetifer);
+			foreach (var child in children.Items)
+			{
+				var insertMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Insert))!.MakeGenericMethod(children.GenericType);
+				insertMethod.Invoke(null, new[] { connection, child });
+			}
+		}
+	}
+
+	public static void Update<T>(this IDbConnection connection, T instance)
+	{
+		var def = ObjectRelationMapper.FindFirst<T>();
+		connection.UpdateByDefinition(instance, def);
+
+		foreach (var idnetifer in def.ChildIdentifers)
+		{
+			var children = GetChildren(instance, idnetifer);
+			foreach (var child in children.Items)
+			{
+				var saveMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Save))!.MakeGenericMethod(children.GenericType);
+				saveMethod.Invoke(null, new[] { connection, child });
+			}
+		}
+	}
+
+	public static void InsertByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
+	{
+		var iq = def.ToInsertQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
+
+		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
 
 		if (iq.Sequence == null)
 		{
@@ -44,21 +84,13 @@ public static class IDbConnectionExtension
 		prop.Write(instance, newId);
 	}
 
-	public static void Update<T>(this IDbConnection connection, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
+	public static void UpdateByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
 	{
-		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Update(def, instance, placeholderIdentifer, Logger, timeout);
-	}
+		var q = def.ToUpdateQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
 
-	public static void Update<T>(this IDbConnection connection, IDbTableDefinition tabledef, T instance, string placeholderIdentifer, ILogger? Logger = null, int? timeout = null)
-	{
-		var q = tabledef.ToUpdateQuery(instance, placeholderIdentifer);
-
-		var executor = new QueryExecutor() { Connection = connection, Logger = Logger, Timeout = timeout };
+		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
 		executor.Execute(q, instance);
 	}
-
-
 
 	public static void Delete<T>(this IDbConnection connection, IEnumerable<T> instances)
 	{
