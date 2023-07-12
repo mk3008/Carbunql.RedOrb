@@ -4,11 +4,11 @@ using Utf8Json;
 
 namespace RedOrb.Mapping;
 
-internal class Mapper : IList<InstanceMap>
+internal class RowMapper : IList<InstanceMap>
 {
 	private readonly List<InstanceMap> Collection = new();
 
-	internal InstanceCacheRepository Repository { get; init; } = new();
+	public InstanceCacheRepository Repository { get; init; } = new();
 
 	public object? Execute(IDataReader r)
 	{
@@ -41,6 +41,7 @@ internal class Mapper : IList<InstanceMap>
 			// TODO: Custom mapping
 			//prop.SetValue(instanceMap.Item, val);
 			prop.Write(instanceMap.Item, val);
+			keys.Add(val);
 		}
 
 		if (instanceMap.Item == null) return;

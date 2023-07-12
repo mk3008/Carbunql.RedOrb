@@ -21,7 +21,7 @@ public static class IDbConnectionExtension
 		foreach (var item in tabledef.ToCreateIndexCommandTexts()) connection.Execute(item);
 	}
 
-	public static List<T> Load<T>(this IDbConnection cn, Action<SelectQuery>? injector = null, ICascadeRule? rule = null)
+	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeRule? rule = null)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
 		var val = def.ToSelectQueryMap<T>();
@@ -30,13 +30,16 @@ public static class IDbConnectionExtension
 
 		if (injector != null) injector(sq);
 
-		var lst = new List<T>();
-		using var r = cn.ExecuteReader(sq);
+		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
 
+		var lst = new List<T>();
+		using var r = executor.ExecuteReader(sq);
+
+		var repository = new InstanceCacheRepository();
 		while (r.Read())
 		{
-			var mapper = CreateMapper(typeMaps);
-			var root = mapper.Execute(r);
+			var rowMapper = CreateRowMapper(typeMaps, repository);
+			var root = rowMapper.Execute(r);
 			if (root == null) continue;
 			lst.Add((T)root);
 		}
@@ -44,9 +47,9 @@ public static class IDbConnectionExtension
 		return lst;
 	}
 
-	private static Mapper CreateMapper(List<TypeMap> typeMaps)
+	private static RowMapper CreateRowMapper(List<TypeMap> typeMaps, InstanceCacheRepository repository)
 	{
-		var lst = new Mapper();
+		var lst = new RowMapper() { Repository = repository };
 		foreach (var map in typeMaps)
 		{
 			lst.Add(new() { TypeMap = map, Item = Activator.CreateInstance(map.Type)! });

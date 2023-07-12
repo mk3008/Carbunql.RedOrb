@@ -10,6 +10,7 @@ public class Test
 	public Test(ITestOutputHelper output)
 	{
 		Logger = new UnitTestLogger() { Output = output };
+		ObjectRelationMapper.Logger = Logger;
 	}
 
 	private readonly UnitTestLogger Logger;
@@ -17,12 +18,6 @@ public class Test
 	[Fact]
 	public void CreateTable()
 	{
-		ObjectRelationMapper.PlaceholderIdentifer = ":";
-		ObjectRelationMapper.Logger = Logger;
-
-		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetBlogDefinition());
-		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetPostDefinition());
-
 		using var cn = new PostgresDB().ConnectionOpenAsNew();
 
 		cn.CreateTableOrDefault<Blog>();
@@ -32,12 +27,6 @@ public class Test
 	[Fact]
 	public void Insert()
 	{
-		ObjectRelationMapper.PlaceholderIdentifer = ":";
-		ObjectRelationMapper.Logger = Logger;
-
-		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetBlogDefinition());
-		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetPostDefinition());
-
 		using var cn = new PostgresDB().ConnectionOpenAsNew();
 		using var trn = cn.BeginTransaction();
 
@@ -54,7 +43,7 @@ public class Test
 		Logger.LogInformation("Querying for a blog");
 		blog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(id);
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", id));
 		}).First();
 
 		// Update
@@ -75,5 +64,18 @@ public class Test
 		cn.Delete(blog);
 
 		trn.Commit();
+	}
+
+	[Fact]
+	public void CascadeLoad()
+	{
+		using var cn = new PostgresDB().ConnectionOpenAsNew();
+
+		Logger.LogInformation("Querying for a blog");
+
+		cn.CreateTableOrDefault<Blog>();
+		cn.CreateTableOrDefault<Post>();
+
+		var posts = cn.Load<Post>(x => x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", 4)));
 	}
 }
