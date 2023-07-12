@@ -9,21 +9,7 @@ namespace RedOrb;
 
 public class DbAccessor
 {
-	//public int Timeout { get; set; } = 60;
-
-	//public T FindById<T>(IDbConnection connection, long? id)
-	//{
-	//	if (!id.HasValue) throw new ArgumentNullException(nameof(id));
-	//	return connection.FindById<T>(id.Value, PlaceholderIdentifer, Logger, Timeout);
-	//}
-
-	//public T1 Load<T1, T2>(IDbConnection connection, long? id)
-	//{
-	//	if (!id.HasValue) throw new ArgumentNullException(nameof(id));
-	//	return connection.FindById<T1, T2>(id.Value, PlaceholderIdentifer, Logger, Timeout);
-	//}
-
-	public static void Save<T>(IDbConnection connection, T instance, int Timeout = 30)
+	public static void Save<T>(IDbConnection connection, T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
 
@@ -31,18 +17,18 @@ public class DbAccessor
 		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
 		if (id == null)
 		{
-			Insert(connection, instance, Timeout);
+			Insert(connection, instance);
 		}
 		else
 		{
-			Update(connection, instance, Timeout);
+			Update(connection, instance);
 		}
 	}
 
-	public static void Insert<T>(IDbConnection connection, T instance, int Timeout = 30)
+	public static void Insert<T>(IDbConnection connection, T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Insert(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger, Timeout);
+		connection.Insert(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger, ObjectRelationMapper.Timeout);
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
@@ -50,15 +36,15 @@ public class DbAccessor
 			foreach (var child in children.Items)
 			{
 				var insertMethod = typeof(DbAccessor).GetMethod(nameof(Insert))!.MakeGenericMethod(children.GenericType);
-				insertMethod.Invoke(null, new[] { connection, child, Timeout });
+				insertMethod.Invoke(null, new[] { connection, child });
 			}
 		}
 	}
 
-	public static void Update<T>(IDbConnection connection, T instance, int Timeout = 30)
+	public static void Update<T>(IDbConnection connection, T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Update(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger, Timeout);
+		connection.Update(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger, ObjectRelationMapper.Timeout);
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
@@ -66,7 +52,7 @@ public class DbAccessor
 			foreach (var child in children.Items)
 			{
 				var saveMethod = typeof(DbAccessor).GetMethod(nameof(Save))!.MakeGenericMethod(children.GenericType);
-				saveMethod.Invoke(null, new[] { connection, child, Timeout });
+				saveMethod.Invoke(null, new[] { connection, child });
 			}
 		}
 	}

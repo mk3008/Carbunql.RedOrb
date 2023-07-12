@@ -9,6 +9,8 @@ public static class ObjectRelationMapper
 
 	public static string PlaceholderIdentifer { get; set; } = "@";
 
+	public static int Timeout { get; set; } = 30;
+
 	private static ConcurrentDictionary<Type, DbTableDefinition> Map { get; set; } = new();
 
 	public static void AddTypeHandler<T>(DbTableDefinition<T> def)
