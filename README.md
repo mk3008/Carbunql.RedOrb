@@ -1,2 +1,2 @@
-# Carbunql.RedOrb
+# RedOrb
 simply object relation mapping framework.
