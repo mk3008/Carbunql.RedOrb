@@ -85,18 +85,35 @@ public class DbAccessor
 		return (genericType, children);
 	}
 
-	public static void Delete<T>(IDbConnection connection, T instance, int Timeout = 30)
+	public static void Delete<T>(IDbConnection connection, IEnumerable<T> instances)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		connection.Delete(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger, Timeout);
+
+		foreach (var instance in instances)
+		{
+			DeleteByDefinition(connection, instance, def);
+		}
+	}
+
+	public static void Delete<T>(IDbConnection connection, T instance)
+	{
+		var def = ObjectRelationMapper.FindFirst<T>();
+		DeleteByDefinition(connection, instance, def);
+	}
+
+	public static void DeleteByDefinition<T>(IDbConnection connection, T instance, DbTableDefinition def)
+	{
+		connection.Delete(def, instance, ObjectRelationMapper.PlaceholderIdentifer, ObjectRelationMapper.Logger);
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
 			var children = GetChildren(instance, idnetifer);
+			var tp = children.GenericType;
+			var childdef = ObjectRelationMapper.FindFirst(tp);
 			foreach (var child in children.Items)
 			{
-				var deleteMethod = typeof(DbAccessor).GetMethod(nameof(Delete))!.MakeGenericMethod(children.GenericType);
-				deleteMethod.Invoke(null, new[] { connection, child, Timeout });
+				var deleteMethod = typeof(DbAccessor).GetMethod(nameof(DeleteByDefinition))!.MakeGenericMethod(children.GenericType);
+				deleteMethod.Invoke(null, new[] { connection, child, childdef });
 			}
 		}
 	}

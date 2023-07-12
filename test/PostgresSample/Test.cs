@@ -61,18 +61,20 @@ public class Test
 		// Update
 		Logger.LogInformation("Updating the blog and adding a post");
 		blog.Url = "https://devblogs.microsoft.com/dotnet";
-		blog.Posts.Add(new Post { Title = "Hello World", Content = "I wrote an app using Carbunql RedOrb!" });
-		blog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "" });
+		blog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" });
+		blog.Posts.Add(new Post { Title = "Hello RedOrb", Content = "I wrote an app using RedOrb!" });
 		DbAccessor.Save(cn, blog);
 
-		//// Remove Update
-		//Logger.LogInformation("Remove part of post");
-		//blog.Posts.RemoveAt(0);
-		//DbAccessor.Save(cn, blog);
+		// Remove Update
+		Logger.LogInformation("Remove part of post");
+		var cache = blog.Posts.ToList();
+		blog.Posts.RemoveAt(0);
+		DbAccessor.Save(cn, blog);
+		DbAccessor.Delete(cn, cache.Where(x => !blog.Posts.Contains(x)));
 
-		//// Delete
-		//Logger.LogInformation("Delete the blog");
-		//DbAccessor.Delete(cn, blog);
+		// Delete
+		Logger.LogInformation("Delete the blog");
+		DbAccessor.Delete(cn, blog);
 
 		trn.Commit();
 	}
