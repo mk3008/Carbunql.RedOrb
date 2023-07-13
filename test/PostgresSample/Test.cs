@@ -5,20 +5,23 @@ using Xunit.Abstractions;
 
 namespace PostgresSample;
 
-public class Test
+public class Test : IClassFixture<PostgresDB>
 {
-	public Test(ITestOutputHelper output)
+	public Test(PostgresDB postgresDB, ITestOutputHelper output) //: this(postgresDB)
 	{
+		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
 		ObjectRelationMapper.Logger = Logger;
 	}
+
+	private readonly PostgresDB PostgresDB;
 
 	private readonly UnitTestLogger Logger;
 
 	[Fact]
 	public void CreateTable()
 	{
-		using var cn = new PostgresDB().ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew();
 
 		cn.CreateTableOrDefault<Blog>();
 		cn.CreateTableOrDefault<Post>();
@@ -27,7 +30,7 @@ public class Test
 	[Fact]
 	public void Insert()
 	{
-		using var cn = new PostgresDB().ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew();
 		using var trn = cn.BeginTransaction();
 
 		cn.CreateTableOrDefault<Blog>();
@@ -69,7 +72,7 @@ public class Test
 	[Fact]
 	public void CascadeLoad()
 	{
-		using var cn = new PostgresDB().ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew();
 
 		Logger.LogInformation("Querying for a blog");
 
