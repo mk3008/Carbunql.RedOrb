@@ -62,6 +62,14 @@ internal class QueryExecutor
 	//	return value;
 	//}
 
+	public int Execute(string query, [CallerMemberName] string memberName = "")
+	{
+		Logger?.LogInformation(memberName + "\n" + query + ";");
+		var count = Connection.Execute(query, commandTimeout: Timeout);
+		Logger?.LogInformation($"results : {count} row(s)");
+		return count;
+	}
+
 	public int Execute(IQueryCommandable query, [CallerMemberName] string memberName = "")
 	{
 		Logger?.LogInformation(memberName + "\n" + query.ToText() + ";");

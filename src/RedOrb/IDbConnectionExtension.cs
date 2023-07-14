@@ -17,14 +17,20 @@ public static class IDbConnectionExtension
 
 	public static void CreateTableOrDefault(this IDbConnection connection, IDbTableDefinition tabledef)
 	{
-		connection.Execute(tabledef.ToCreateTableCommandText());
+		var executor = new QueryExecutor()
+		{
+			Connection = connection,
+			Logger = ObjectRelationMapper.Logger
+		};
+
+		executor.Execute(tabledef.ToCreateTableCommandText());
 		foreach (var item in tabledef.ToCreateIndexCommandTexts()) connection.Execute(item);
 	}
 
 	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeRule? rule = null)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		var val = def.ToSelectQueryMap<T>();
+		var val = def.ToSelectQueryMap<T>(rule);
 		var sq = val.Query;
 		var typeMaps = val.Maps;
 

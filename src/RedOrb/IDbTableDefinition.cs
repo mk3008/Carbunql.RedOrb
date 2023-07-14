@@ -126,9 +126,10 @@ public static class IDbTableDefinitionExtention
 
 		rule ??= new FullCascadeRule();
 
-		source.ParentRelations.Where(x => rule.DoRelation(source.Type!, x.IdentiferType)).ToList().ForEach(relation =>
+		source.ParentRelations.ForEach(relation =>
 		{
-			maps.AddRange(sq.AddJoin(relation, fromMap, rule));
+			var doCascade = rule.DoRelation(source.Type!, relation.IdentiferType);
+			maps.AddRange(sq.AddJoin(relation, fromMap, rule, doSelectPKeyOnly: !doCascade));
 		});
 
 		return (sq, maps);

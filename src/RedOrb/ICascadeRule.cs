@@ -5,11 +5,33 @@ public interface ICascadeRule
 	bool DoRelation(Type from, Type to);
 }
 
+public class CascadeRuleContainer : ICascadeRule
+{
+	public List<ICascadeRule> Rules { get; set; } = new();
+
+	public bool DoRelation(Type from, Type to)
+	{
+		if (Rules.Where(rule => !rule.DoRelation(from, to)).Any())
+		{
+			return false;
+		}
+		return true;
+	}
+}
+
 public class FullCascadeRule : ICascadeRule
 {
 	public bool DoRelation(Type from, Type to)
 	{
 		return true;
+	}
+}
+
+public class NoCascadeRule : ICascadeRule
+{
+	public bool DoRelation(Type from, Type to)
+	{
+		return false;
 	}
 }
 
@@ -42,9 +64,13 @@ public class CascadeRule : ICascadeRule
 {
 	public List<CascadeRelation> CascadeRelationRules { get; set; } = new();
 
+	public bool IsNegative { get; set; } = false;
+
 	public bool DoRelation(Type from, Type to)
 	{
-		return CascadeRelationRules.Where(x => x.FromType.Equals(from) && x.ToType.Equals(to)).Any();
+		var val = CascadeRelationRules.Where(x => x.FromType.Equals(from) && x.ToType.Equals(to)).Any();
+		if (IsNegative) return !val;
+		return val;
 	}
 }
 

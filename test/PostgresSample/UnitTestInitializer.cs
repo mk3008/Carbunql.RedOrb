@@ -12,5 +12,6 @@ internal static class UnitTestInitializer
 		ObjectRelationMapper.PlaceholderIdentifer = ":";
 		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetBlogDefinition());
 		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetPostDefinition());
+		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetCommentDefinition());
 	}
 }
