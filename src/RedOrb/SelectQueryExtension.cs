@@ -34,7 +34,7 @@ internal static class SelectQueryExtension
 		});
 	}
 
-	public static List<TypeMap> AddJoin(this SelectQuery sq, DbParentRelationDefinition relation, TypeMap fromMap, ICascadeRule rule, bool doSelectPKeyOnly)
+	public static List<TypeMap> AddJoin(this SelectQuery sq, DbParentRelationDefinition relation, TypeMap fromMap, ICascadeReadRule rule, bool doSelectPKeyOnly)
 	{
 		var destination = ObjectRelationMapper.FindFirst(relation.IdentiferType);
 		bool isNullable = Nullable.GetUnderlyingType(relation.IdentiferType) != null;
@@ -80,7 +80,7 @@ internal static class SelectQueryExtension
 		sq.AddSelectColumnsWithoutPrimaryKeys(destination, map);
 		destination.ParentRelations.ForEach(relation =>
 		{
-			var doCascade = rule.DoRelation(destination.Type!, relation.IdentiferType);
+			var doCascade = rule.DoCascade(destination.Type!, relation.IdentiferType);
 			maps.AddRange(sq.AddJoin(relation, map, rule, doSelectPKeyOnly: !doCascade));
 		});
 

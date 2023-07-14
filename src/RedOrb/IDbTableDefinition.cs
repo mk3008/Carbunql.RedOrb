@@ -118,17 +118,17 @@ public static class IDbTableDefinitionExtention
 		return (sq, map);
 	}
 
-	public static (SelectQuery Query, List<TypeMap> Maps) ToSelectQueryMap<T>(this DbTableDefinition source, ICascadeRule? rule = null)
+	public static (SelectQuery Query, List<TypeMap> Maps) ToSelectQueryMap<T>(this DbTableDefinition source, ICascadeReadRule? rule = null)
 	{
 		var (sq, fromMap) = source.CreateSelectQuery<T>();
 		var maps = new List<TypeMap>() { fromMap };
 		var from = sq.FromClause!.Root;
 
-		rule ??= new FullCascadeRule();
+		rule ??= new FullCascadeReadRule();
 
 		source.ParentRelations.ForEach(relation =>
 		{
-			var doCascade = rule.DoRelation(source.Type!, relation.IdentiferType);
+			var doCascade = rule.DoCascade(source.Type!, relation.IdentiferType);
 			maps.AddRange(sq.AddJoin(relation, fromMap, rule, doSelectPKeyOnly: !doCascade));
 		});
 

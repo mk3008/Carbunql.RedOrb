@@ -1,17 +1,17 @@
 ﻿namespace RedOrb;
 
-public interface ICascadeRule
+public interface ICascadeReadRule
 {
-	bool DoRelation(Type from, Type to);
+	bool DoCascade(Type from, Type to);
 }
 
-public class CascadeRuleContainer : ICascadeRule
+public class CascadeReadRuleContainer : ICascadeReadRule
 {
-	public List<ICascadeRule> Rules { get; set; } = new();
+	public List<ICascadeReadRule> Rules { get; set; } = new();
 
-	public bool DoRelation(Type from, Type to)
+	public bool DoCascade(Type from, Type to)
 	{
-		if (Rules.Where(rule => !rule.DoRelation(from, to)).Any())
+		if (Rules.Where(rule => !rule.DoCascade(from, to)).Any())
 		{
 			return false;
 		}
@@ -19,25 +19,25 @@ public class CascadeRuleContainer : ICascadeRule
 	}
 }
 
-public class FullCascadeRule : ICascadeRule
+public class FullCascadeReadRule : ICascadeReadRule
 {
-	public bool DoRelation(Type from, Type to)
+	public bool DoCascade(Type from, Type to)
 	{
 		return true;
 	}
 }
 
-public class NoCascadeRule : ICascadeRule
+public class NoCascadeReadRule : ICascadeReadRule
 {
-	public bool DoRelation(Type from, Type to)
+	public bool DoCascade(Type from, Type to)
 	{
 		return false;
 	}
 }
 
-public class TierCascadeRule : ICascadeRule
+public class TierCascadeReadRule : ICascadeReadRule
 {
-	public TierCascadeRule(Type rootType)
+	public TierCascadeReadRule(Type rootType)
 	{
 		TypeTiers.Add(rootType, 0);
 	}
@@ -46,7 +46,7 @@ public class TierCascadeRule : ICascadeRule
 
 	public int UpperTier { get; set; } = 0;
 
-	public bool DoRelation(Type from, Type to)
+	public bool DoCascade(Type from, Type to)
 	{
 		if (!TypeTiers.ContainsKey(from)) return false;
 		var fromTier = TypeTiers[from];
@@ -60,13 +60,13 @@ public class TierCascadeRule : ICascadeRule
 	}
 }
 
-public class CascadeRule : ICascadeRule
+public class CascadeReadRule : ICascadeReadRule
 {
 	public List<CascadeRelation> CascadeRelationRules { get; set; } = new();
 
 	public bool IsNegative { get; set; } = false;
 
-	public bool DoRelation(Type from, Type to)
+	public bool DoCascade(Type from, Type to)
 	{
 		var val = CascadeRelationRules.Where(x => x.FromType.Equals(from) && x.ToType.Equals(to)).Any();
 		if (IsNegative) return !val;

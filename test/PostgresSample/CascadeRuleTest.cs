@@ -74,7 +74,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		var loadedComment = cn.Load<Comment>(x =>
 		{
 			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId!.Value));
-		}, rule: new NoCascadeRule()).First();
+		}, rule: new NoCascadeReadRule()).First();
 
 		Assert.Equal(loadedComment.CommentId, newComment.CommentId);
 		Assert.Equal(loadedComment.CommentText, newComment.CommentText);
@@ -101,7 +101,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		newPost.Comments.Add(newComment);
 		cn.Save(newBlog);
 
-		var rule = new CascadeRule();
+		var rule = new CascadeReadRule();
 		rule.CascadeRelationRules.Add(new() { FromType = typeof(Comment), ToType = typeof(Post) });
 
 		// Read
@@ -137,7 +137,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		newPost.Comments.Add(newComment);
 		cn.Save(newBlog);
 
-		var rule = new CascadeRule();
+		var rule = new CascadeReadRule();
 		rule.CascadeRelationRules.Add(new() { FromType = typeof(Comment), ToType = typeof(Post) });
 		rule.IsNegative = true;
 

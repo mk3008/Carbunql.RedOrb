@@ -27,7 +27,7 @@ public static class IDbConnectionExtension
 		foreach (var item in tabledef.ToCreateIndexCommandTexts()) connection.Execute(item);
 	}
 
-	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeRule? rule = null)
+	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeReadRule? rule = null)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
 		var val = def.ToSelectQueryMap<T>(rule);
