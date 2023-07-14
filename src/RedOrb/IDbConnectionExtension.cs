@@ -4,6 +4,7 @@ using Dapper;
 using RedOrb.Mapping;
 using System.Collections;
 using System.Data;
+using Carbunql.Building;
 
 namespace RedOrb;
 
@@ -172,7 +173,47 @@ public static class IDbConnectionExtension
 		}
 	}
 
-	private static (Type GenericType, IEnumerable Items) GetChildren<T>(T instance, string idnetifer)
+	public static void Fetch<T>(this IDbConnection connection, T instance, string collectionProperty)
+	{
+		var vals = GetPrimaryKeyValues(instance);
+
+		var children = GetChildren(instance, collectionProperty);
+		var relation = GetParentRelation<T>(children);
+
+		var rule = new CascadeReadRule();
+		rule.CascadeRelationRules.Add(new() { FromType = children.GenericType, ToType = typeof(T) });
+		rule.IsNegative = true;
+
+		var injector = (SelectQuery x) =>
+		{
+			for (int i = 0; i < relation.ColumnNames.Count(); i++)
+			{
+				x.Where(x.FromClause!, relation.ColumnNames[i]).Equal(x.AddParameter($"{ObjectRelationMapper.PlaceholderIdentifer}key{i}", vals[i]));
+			}
+		};
+
+		var loadMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Load))!.MakeGenericMethod(children.GenericType);
+		var items = (IEnumerable?)loadMethod.Invoke(null, new object[] { connection, injector, rule });
+		if (items == null) throw new NullReferenceException("Load method return value is NULL");
+		foreach (var item in items)
+		{
+			children.Items.Add(item);
+		}
+	}
+
+	private static List<object?> GetPrimaryKeyValues<T>(T instance)
+	{
+		var def = ObjectRelationMapper.FindFirst<T>();
+		return def.GetPrimaryKeys().Select(x => x.Identifer.ToPropertyInfo<T>().GetValue(instance)).ToList();
+	}
+
+	private static DbParentRelationDefinition GetParentRelation<ParentT>(Children children)
+	{
+		var def = ObjectRelationMapper.FindFirst(children.GenericType);
+		return def.ParentRelations.Where(x => x.IdentiferType == typeof(ParentT)).First();
+	}
+
+	private static Children GetChildren<T>(T instance, string idnetifer)
 	{
 		var prop = idnetifer.ToPropertyInfo<T>();
 		var collectionType = prop.PropertyType;
@@ -181,8 +222,15 @@ public static class IDbConnectionExtension
 
 		Type genericType = collectionType.GenericTypeArguments[0];
 
-		var children = (IEnumerable)prop.GetValue(instance)!;
+		var children = (IList)prop.GetValue(instance)!;
 
-		return (genericType, children);
+		return new Children() { GenericType = genericType, Items = children };
+	}
+
+	private class Children
+	{
+		public required Type GenericType { get; set; }
+
+		public required IList Items { get; set; }
 	}
 }

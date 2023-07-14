@@ -134,43 +134,64 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		trn.Commit();
 	}
 
-	//[Fact]
-	//public void FetchTest()
-	//{
-	//	using var cn = PostgresDB.ConnectionOpenAsNew();
-	//	using var trn = cn.BeginTransaction();
+	[Fact]
+	public void FetchTest()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var trn = cn.BeginTransaction();
 
-	//	Logger.LogInformation("Inserting a new blog");
-	//	var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
-	//	var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
-	//	newBlog.Posts.Add(newPost);
-	//	cn.Save(newBlog);
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
+		newBlog.Posts.Add(newPost);
+		cn.Save(newBlog);
 
-	//	// Read
-	//	Logger.LogInformation("Querying for a blog");
-	//	var loadedBlog = cn.Load<Blog>(x =>
-	//	{
-	//		x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
-	//	}).First();
+		// Read
+		Logger.LogInformation("Querying for a blog");
+		var loadedBlog = cn.Load<Blog>(x =>
+		{
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+		}).First();
 
-	//	Assert.Empty(loadedBlog.Posts);
+		Assert.Empty(loadedBlog.Posts);
 
-	//	Fetch(cn, loadedBlog, nameof(loadedBlog.Posts));
+		cn.Fetch(loadedBlog, nameof(loadedBlog.Posts));
 
-	//	trn.Commit();
-	//}
+		Assert.Single(loadedBlog.Posts);
+		var loadedPost = loadedBlog.Posts[0];
 
-	//private void Fetch<T>(IDbConnection cn, T instance, string collectionProperty)
-	//{
-	//	var def = ObjectRelationMapper.FindFirst<T>();
-	//	var identifer = def.ChildIdentifers.Where(x => x == collectionProperty).FirstOrDefault();
-	//	var 
+		Assert.Equal(newPost.PostId, loadedPost.PostId);
+		Assert.Equal(newPost.Title, loadedPost.Title);
+		Assert.Equal(newPost.Content, loadedPost.Content);
+		Assert.Equal(newPost.Blog.BlogId, loadedPost.Blog.BlogId);
+		Assert.Equal(newPost.Blog.Url, loadedPost.Blog.Url);
 
-	//	var loadedBlog = cn.Load<T>(x =>
-	//	{
-	//		x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
-	//	}).First();
-	//}
+		trn.Commit();
+	}
 
+	[Fact]
+	public void CacheTest()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var trn = cn.BeginTransaction();
 
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		newBlog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" });
+		newBlog.Posts.Add(new Post { Title = "Hello RedOrb", Content = "I wrote an app using RedOrb!" });
+		cn.Save(newBlog);
+
+		// Read
+		Logger.LogInformation("Querying for a blog");
+		var loadedBlog = cn.Load<Blog>(x =>
+		{
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+		}).First();
+		cn.Fetch(loadedBlog, nameof(loadedBlog.Posts));
+
+		Assert.Equal(2, loadedBlog.Posts.Count);
+		Assert.Equal(loadedBlog.Posts[0].Blog, loadedBlog.Posts[1].Blog);
+
+		trn.Commit();
+	}
 }
