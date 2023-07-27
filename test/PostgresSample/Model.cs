@@ -79,6 +79,10 @@ public static class DbTableDefinitionRepository
 			},
 			ChildIdentifers = {
 				nameof(Blog.Posts)
+			},
+			Indexes =
+			{
+				new() {Identifers = { nameof(Blog.Url) }, IsUnique = true},
 			}
 		};
 	}

@@ -99,6 +99,13 @@ public static class IDbTableDefinitionExtention
 		return lst;
 	}
 
+	public static List<DbIndexDefinition> GetUniqueKeyIndexes(this IDbTableDefinition source)
+	{
+		var lst = source.Indexes.Where(x => x.IsUnique).ToList();
+		if (!lst.Any()) throw new NotSupportedException($"Unique key column not defined in {source.GetTableFullName()}");
+		return lst;
+	}
+
 	private static (SelectQuery, TypeMap) CreateSelectQuery<T>(this DbTableDefinition def)
 	{
 		var map = new TypeMap()
