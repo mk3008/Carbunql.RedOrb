@@ -1,10 +1,11 @@
-﻿using Carbunql.Dapper;
-using Carbunql;
+﻿using Carbunql;
+using Carbunql.Building;
+using Carbunql.Dapper;
+using Cysharp.Text;
 using Dapper;
 using RedOrb.Mapping;
 using System.Collections;
 using System.Data;
-using Carbunql.Building;
 
 namespace RedOrb;
 
@@ -173,6 +174,55 @@ public static class IDbConnectionExtension
 		}
 	}
 
+	public static T Fetch<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	{
+		var pkeymaps = GetPrimaryKeyValueMaps(instance);
+
+		if (!pkeymaps.Where(x => x.Value == null).Any())
+		{
+			return connection.Fetch<T>(pkeymaps, rule);
+		}
+
+		var uqmaps = GetUniqueKeyValueMaps(instance);
+
+		if (!uqmaps.Where(x => x.Value == null).Any())
+		{
+			return connection.Fetch<T>(uqmaps, rule);
+		}
+
+		throw new NullReferenceException("No conditions found.");
+	}
+
+	private static T Fetch<T>(this IDbConnection connection, List<ValueMap> condition, ICascadeReadRule? rule = null)
+	{
+		var injectorOfCondition = (SelectQuery x) =>
+		{
+			var t = x.FromClause!.Root;
+			foreach (var item in condition)
+			{
+				var index = condition.IndexOf(item);
+				x.Where(t, item.ColumnName).Equal(x.AddParameter($"{ObjectRelationMapper.PlaceholderIdentifer}key{index}", item.Value));
+			}
+		};
+
+		var val = connection.Load<T>(injectorOfCondition, rule).FirstOrDefault();
+
+		if (val == null)
+		{
+			var sb = ZString.CreateStringBuilder();
+			var isFirst = true;
+			foreach (var item in condition)
+			{
+				if (!isFirst) sb.Append(", ");
+				sb.Append(item.Identifer + "=" + item.Value!.ToString());
+				isFirst = false;
+			}
+			throw new ArgumentException($"No records found.({sb})");
+		}
+
+		return val;
+	}
+
 	public static void Fetch<T>(this IDbConnection connection, T instance, string collectionProperty)
 	{
 		var vals = GetPrimaryKeyValues(instance);
@@ -207,6 +257,28 @@ public static class IDbConnectionExtension
 		return def.GetPrimaryKeys().Select(x => x.Identifer.ToPropertyInfo<T>().GetValue(instance)).ToList();
 	}
 
+	private static List<ValueMap> GetPrimaryKeyValueMaps<T>(T instance)
+	{
+		var def = ObjectRelationMapper.FindFirst<T>();
+		var maps = def.GetPrimaryKeys().Select(x => new ValueMap() { Identifer = x.Identifer, ColumnName = x.ColumnName, Value = x.Identifer.ToPropertyInfo<T>().GetValue(instance) }).ToList();
+		if (!maps.Any()) throw new NullReferenceException("Could not find primary key definition.");
+		return maps;
+	}
+
+	private static List<ValueMap> GetUniqueKeyValueMaps<T>(T instance)
+	{
+		var def = ObjectRelationMapper.FindFirst<T>();
+
+		var indexes = def.GetUniqueKeyIndexes();
+		if (!indexes.Any()) throw new NullReferenceException("Could not find unique index definition.");
+		if (indexes.Count != 1) throw new NullReferenceException("More than one unique index defined.");
+
+		var columns = def.ColumnDefinitions.Where(x => indexes.First().Identifers.Contains(x.Identifer)).ToList();
+		var maps = columns.Select(x => new ValueMap() { Identifer = x.Identifer, ColumnName = x.ColumnName, Value = x.Identifer.ToPropertyInfo<T>().GetValue(instance) }).ToList();
+		if (!maps.Any()) throw new NullReferenceException("Could not find unique key definition.");
+		return maps;
+	}
+
 	private static DbParentRelationDefinition GetParentRelation<ParentT>(Children children)
 	{
 		var def = ObjectRelationMapper.FindFirst(children.GenericType);
@@ -232,5 +304,12 @@ public static class IDbConnectionExtension
 		public required Type GenericType { get; set; }
 
 		public required IList Items { get; set; }
+	}
+
+	private class ValueMap
+	{
+		public required string Identifer { get; set; }
+		public required string ColumnName { get; set; }
+		public object? Value { get; set; }
 	}
 }
