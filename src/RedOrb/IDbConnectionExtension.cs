@@ -3,6 +3,7 @@ using Carbunql.Building;
 using Carbunql.Dapper;
 using Cysharp.Text;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using RedOrb.Mapping;
 using System.Collections;
 using System.Data;
@@ -22,7 +23,7 @@ public static class IDbConnectionExtension
 		var executor = new QueryExecutor()
 		{
 			Connection = connection,
-			Logger = ObjectRelationMapper.Logger
+			Logger = (connection is ILogger lg) ? lg : null
 		};
 
 		executor.Execute(tabledef.ToCreateTableCommandText());
@@ -38,7 +39,12 @@ public static class IDbConnectionExtension
 
 		if (injector != null) injector(sq);
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
+		var executor = new QueryExecutor()
+		{
+			Connection = connection,
+			Logger = (connection is ILogger lg) ? lg : null,
+			Timeout = ObjectRelationMapper.Timeout
+		};
 
 		var lst = new List<T>();
 		using var r = executor.ExecuteReader(sq);
@@ -117,7 +123,12 @@ public static class IDbConnectionExtension
 	{
 		var iq = def.ToInsertQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
+		var executor = new QueryExecutor()
+		{
+			Connection = connection,
+			Logger = (connection is ILogger lg) ? lg : null,
+			Timeout = ObjectRelationMapper.Timeout
+		};
 
 		if (iq.Sequence == null)
 		{
@@ -135,7 +146,12 @@ public static class IDbConnectionExtension
 	{
 		var q = def.ToUpdateQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
+		var executor = new QueryExecutor()
+		{
+			Connection = connection,
+			Logger = (connection is ILogger lg) ? lg : null,
+			Timeout = ObjectRelationMapper.Timeout
+		};
 		executor.Execute(q, instance);
 	}
 
@@ -159,7 +175,12 @@ public static class IDbConnectionExtension
 	{
 		var q = def.ToDeleteQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
 
-		var executor = new QueryExecutor() { Connection = connection, Logger = ObjectRelationMapper.Logger, Timeout = ObjectRelationMapper.Timeout };
+		var executor = new QueryExecutor()
+		{
+			Connection = connection,
+			Logger = (connection is ILogger lg) ? lg : null,
+			Timeout = ObjectRelationMapper.Timeout
+		};
 		executor.Execute(q);
 
 		foreach (var idnetifer in def.ChildIdentifers)
@@ -297,19 +318,5 @@ public static class IDbConnectionExtension
 		var children = (IList)prop.GetValue(instance)!;
 
 		return new Children() { GenericType = genericType, Items = children };
-	}
-
-	private class Children
-	{
-		public required Type GenericType { get; set; }
-
-		public required IList Items { get; set; }
-	}
-
-	private class ValueMap
-	{
-		public required string Identifer { get; set; }
-		public required string ColumnName { get; set; }
-		public object? Value { get; set; }
 	}
 }

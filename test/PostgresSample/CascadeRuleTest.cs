@@ -11,9 +11,8 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 	{
 		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
-		ObjectRelationMapper.Logger = Logger;
 
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 
 		cn.CreateTableOrDefault<Blog>();
 		cn.CreateTableOrDefault<Post>();
@@ -27,11 +26,11 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void FullCascadeTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeRuleTest/FullCascadeTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		var newComment = new Comment { CommentText = "How are you?" };
@@ -58,11 +57,11 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void NoCascadeTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeRuleTest/NoCascadeTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		var newComment = new Comment { CommentText = "How are you?" };
@@ -90,11 +89,11 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void WhiteListTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeRuleTest/WhiteListTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		var newComment = new Comment { CommentText = "How are you?" };
@@ -126,11 +125,11 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void BlackListTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeRuleTest/BlackListTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		var newComment = new Comment { CommentText = "How are you?" };

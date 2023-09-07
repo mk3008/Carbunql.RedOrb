@@ -10,7 +10,7 @@ internal static class SelectQueryExtension
 {
 	public static void AddSelectPrimarykeyColumns(this SelectQuery sq, DbTableDefinition def, TypeMap map)
 	{
-		var t = sq.FromClause!.GetSelectableTables().Where(x => x.Alias == map.TableAlias).First();
+		var t = sq.GetSelectableTables().Where(x => x.Alias == map.TableAlias).First();
 
 		var pkeys = def.GetPrimaryKeys();
 		pkeys.ForEach(column =>
@@ -23,7 +23,7 @@ internal static class SelectQueryExtension
 
 	public static void AddSelectColumnsWithoutPrimaryKeys(this SelectQuery sq, DbTableDefinition def, TypeMap map)
 	{
-		var t = sq.FromClause!.GetSelectableTables().Where(x => x.Alias == map.TableAlias).First();
+		var t = sq.GetSelectableTables().Where(x => x.Alias == map.TableAlias).First();
 
 		var pkeys = def.GetPrimaryKeys();
 		def.ColumnDefinitions.Where(x => !string.IsNullOrEmpty(x.Identifer) && !pkeys.Contains(x)).ToList().ForEach(column =>
@@ -43,7 +43,7 @@ internal static class SelectQueryExtension
 		var toKeys = destination.GetPrimaryKeys();
 		var joinType = isNullable ? "left join" : "inner join";
 
-		var index = sq.FromClause!.GetSelectableTables().Count();
+		var index = sq.GetSelectableTables().Count();
 
 		var map = new TypeMap()
 		{
@@ -57,7 +57,7 @@ internal static class SelectQueryExtension
 		var t = sq.FromClause!.Join(destination.SchemaName, destination.TableName, joinType).As("t" + index).On(x =>
 		{
 			ValueBase? condition = null;
-			for (int i = 0; i < fromKeys.Count(); i++)
+			for (int i = 0; i < fromKeys.Count; i++)
 			{
 				if (condition == null)
 				{

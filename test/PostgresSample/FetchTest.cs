@@ -10,9 +10,8 @@ public class FetchTest : IClassFixture<PostgresDB>
 	{
 		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
-		ObjectRelationMapper.Logger = Logger;
 
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 
 		cn.CreateTableOrDefault<Blog>();
 	}
@@ -24,12 +23,12 @@ public class FetchTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void SelectByPrimaryKey()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/FetchTest/SelectByPrimaryKey" };
 		cn.Save(newBlog);
 
 		// Read
@@ -45,12 +44,12 @@ public class FetchTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void InstanceIsNotEqual()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/FetchTest/InstanceIsNotEqual" };
 		cn.Save(newBlog);
 
 		// Read
@@ -67,10 +66,10 @@ public class FetchTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void SelectByUniqueKey()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
-		var url = "http://blogs.msdn.com/adonet";
+		var url = "http://blogs.msdn.com/adonet/FetchTest/SelectByUniqueKey";
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
@@ -90,7 +89,7 @@ public class FetchTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void NotFoundExceptionTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		var ex = Assert.Throws<ArgumentException>(() =>

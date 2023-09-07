@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Carbunql" Version="0.2.7" />
-    <PackageReference Include="Carbunql.Dapper" Version="0.1.0" />
+    <PackageReference Include="Carbunql" Version="0.4.1" />
+    <PackageReference Include="Carbunql.Dapper" Version="0.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Utf8Json" Version="1.3.7" />
   </ItemGroup>

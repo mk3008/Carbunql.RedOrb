@@ -5,7 +5,7 @@ namespace RedOrb;
 
 public static class ObjectRelationMapper
 {
-	public static ILogger? Logger { get; set; }
+	//public static ILogger? Logger { get; set; }
 
 	public static string PlaceholderIdentifer { get; set; } = "@";
 

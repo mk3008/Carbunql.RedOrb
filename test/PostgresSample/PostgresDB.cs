@@ -1,4 +1,6 @@
-﻿using Npgsql;
+﻿using Microsoft.Extensions.Logging;
+using Npgsql;
+using RedOrb;
 using System.Data;
 using Testcontainers.PostgreSql;
 
@@ -22,10 +24,11 @@ public class PostgresDB : IAsyncLifetime
 		return Container.DisposeAsync().AsTask();
 	}
 
-	public IDbConnection ConnectionOpenAsNew()
+	public LoggingDbConnection ConnectionOpenAsNew(ILogger logger)
 	{
 		var cn = new NpgsqlConnection(Container.GetConnectionString());
-		cn.Open();
-		return cn;
+		var lcn = new LoggingDbConnection(cn, logger);
+		lcn.Open();
+		return lcn;
 	}
 }

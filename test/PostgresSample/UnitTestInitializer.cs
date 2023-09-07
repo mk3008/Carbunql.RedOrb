@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using RedOrb;
+﻿using RedOrb;
 using System.Runtime.CompilerServices;
 
 namespace PostgresSample;

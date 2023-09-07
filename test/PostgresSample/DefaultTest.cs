@@ -11,9 +11,8 @@ public class DefaultTest : IClassFixture<PostgresDB>
 	{
 		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
-		ObjectRelationMapper.Logger = Logger;
 
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 
 		cn.CreateTableOrDefault<Blog>();
 	}
@@ -25,12 +24,12 @@ public class DefaultTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void CreateTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/CreateTest" };
 
 		Assert.Null(newBlog.BlogId);
 		cn.Save(newBlog);
@@ -42,12 +41,12 @@ public class DefaultTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void ReadTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/ReadTest" };
 		cn.Save(newBlog);
 
 		// Read
@@ -66,15 +65,15 @@ public class DefaultTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void UpdateTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/UpdateTest" };
 		cn.Save(newBlog);
 
-		newBlog.Url = "https://devblogs.microsoft.com/dotnet";
+		newBlog.Url = "https://devblogs.microsoft.com/dotnet/DefaultTest/UpdateTest";
 		cn.Save(newBlog);
 
 		// Read
@@ -93,12 +92,12 @@ public class DefaultTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void DeleteTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		// Create
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/DeleteTest" };
 		cn.Save(newBlog);
 
 		cn.Delete(newBlog);

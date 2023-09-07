@@ -1,7 +1,6 @@
 ﻿using Carbunql.Building;
 using Microsoft.Extensions.Logging;
 using RedOrb;
-using System.Collections.ObjectModel;
 using System.Data;
 using Xunit.Abstractions;
 
@@ -13,9 +12,8 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	{
 		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
-		ObjectRelationMapper.Logger = Logger;
 
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 
 		cn.CreateTableOrDefault<Blog>();
 		cn.CreateTableOrDefault<Post>();
@@ -29,11 +27,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void CreateTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/CreateTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 
@@ -52,11 +50,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void ReadTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/ReadTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		cn.Save(newBlog);
@@ -80,11 +78,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void UpdateTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/UpdateTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		cn.Save(newBlog);
@@ -111,11 +109,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void DeleteTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/DeleteTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		cn.Save(newBlog);
@@ -137,11 +135,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void FetchTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/FetchTest" };
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 		cn.Save(newBlog);
@@ -172,11 +170,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	[Fact]
 	public void CacheTest()
 	{
-		using var cn = PostgresDB.ConnectionOpenAsNew();
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
 		using var trn = cn.BeginTransaction();
 
 		Logger.LogInformation("Inserting a new blog");
-		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/CacheTest" };
 		newBlog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" });
 		newBlog.Posts.Add(new Post { Title = "Hello RedOrb", Content = "I wrote an app using RedOrb!" });
 		cn.Save(newBlog);
