@@ -77,7 +77,24 @@ var def = new DbTableDefinition<Blog>()
 ObjectRelationMapper.AddTypeHandler(def);
 ```
 
+## Model
+```cs
+public class Blog
+{
+    public int? BlogId { get; set; }
+    public string Url { get; set; } = string.Empty;
+}
+```
+
+
 # Features
+## General
+- Connection classes are not hidden
+- Supports SQL logging
+- DBMS independent
+- Supports sequence keys
+- Supports composite keys
+
 ## When reading
 - All tables with a 1:1 or 1:0..1 relationship are joined and read (default)
 - You can set whether to join tables.
@@ -88,5 +105,10 @@ ObjectRelationMapper.AddTypeHandler(def);
 - All tables with 1 to 0..N relationships are saved.
 
 # Constraints
+## General
+- When using sequence keys, please make the type Nullable
+- Connection class generation is out of scope
+- Requires creation of table definition class
+
 ## When reading
 - Column filtering is not possible.
