@@ -4,9 +4,9 @@ using Xunit.Abstractions;
 
 namespace PostgresSample;
 
-public class FetchTest : IClassFixture<PostgresDB>
+public class LoadTest : IClassFixture<PostgresDB>
 {
-	public FetchTest(PostgresDB postgresDB, ITestOutputHelper output)
+	public LoadTest(PostgresDB postgresDB, ITestOutputHelper output)
 	{
 		PostgresDB = postgresDB;
 		Logger = new UnitTestLogger() { Output = output };
@@ -33,7 +33,7 @@ public class FetchTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.Fetch(new Blog() { BlogId = newBlog.BlogId });
+		var loadedBlog = cn.Load(new Blog() { BlogId = newBlog.BlogId });
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -54,7 +54,7 @@ public class FetchTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.Fetch(newBlog);
+		var loadedBlog = cn.Load(newBlog);
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -78,7 +78,7 @@ public class FetchTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.Fetch(new Blog() { Url = url });
+		var loadedBlog = cn.Load(new Blog() { Url = url });
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -96,7 +96,7 @@ public class FetchTest : IClassFixture<PostgresDB>
 		{
 			// Read
 			Logger.LogInformation("Querying for a blog");
-			var loadedBlog = cn.Fetch(new Blog() { BlogId = 0 });
+			var loadedBlog = cn.Load(new Blog() { BlogId = 0 });
 		});
 		Assert.Equal("No records found.(BlogId=0)", ex.Message);
 	}

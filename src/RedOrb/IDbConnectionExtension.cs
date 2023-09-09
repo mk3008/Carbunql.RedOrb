@@ -195,7 +195,7 @@ public static class IDbConnectionExtension
 		}
 	}
 
-	public static T Fetch<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	public static T Load<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
 	{
 		var pkeymaps = GetPrimaryKeyValueMaps(instance);
 
