@@ -10,7 +10,6 @@ Although a configuration file is required, CRUD processing is very simple to wri
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-using var trn = cn.BeginTransaction();
 
 var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
 cn.Save(newBlog);
@@ -20,7 +19,6 @@ cn.Save(newBlog);
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-using var trn = cn.BeginTransaction();
 
 var blog = cn.Load(new Blog() { BlodId = 1 });
 ```
@@ -30,7 +28,6 @@ var blog = cn.Load(new Blog() { BlodId = 1 });
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-using var trn = cn.BeginTransaction();
 
 var blog = cn.Load(new Blog() { BlodId = 1 });
 
@@ -44,9 +41,17 @@ cn.Save(blog);
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-using var trn = cn.BeginTransaction();
 
 cn.Delete(new Blog() { BlodId = 1 });
+```
+
+## Create Table
+```cs
+using RedOrb;
+
+using IDbConnection cn = SomethingMethod();
+
+cn.CreateTableOrDefault<Blog>();
 ```
 
 ## Configuration
@@ -72,6 +77,16 @@ var def = new DbTableDefinition<Blog>()
 ObjectRelationMapper.AddTypeHandler(def);
 ```
 
+# Features
+## When reading
+- All tables with a 1:1 or 1:0..1 relationship are joined and read (default)
+- You can set whether to join tables.
+- You can use primary key search and unique key search.
+- You can also specify any search conditions.
 
+## When saving
+- All tables with 1 to 0..N relationships are saved.
 
-
+# Constraints
+## When reading
+- Column filtering is not possible.
