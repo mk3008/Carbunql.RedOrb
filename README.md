@@ -5,6 +5,24 @@ ORM for people who simply want to access a database.
 
 # Demo
 Although a configuration file is required, CRUD processing is very simple to write.
+## Model
+```cs
+public class Blog
+{
+    public int? BlogId { get; set; }
+    public string Url { get; set; } = string.Empty;
+}
+```
+
+## Create Table
+```cs
+using RedOrb;
+
+using IDbConnection cn = SomethingMethod();
+
+cn.CreateTableOrDefault<Blog>();
+```
+
 ## Create
 ```cs
 using RedOrb;
@@ -45,15 +63,6 @@ using IDbConnection cn = SomethingMethod();
 cn.Delete(new Blog() { BlodId = 1 });
 ```
 
-## Create Table
-```cs
-using RedOrb;
-
-using IDbConnection cn = SomethingMethod();
-
-cn.CreateTableOrDefault<Blog>();
-```
-
 ## Configuration
 ```cs
 using RedOrb;
@@ -76,16 +85,6 @@ var def = new DbTableDefinition<Blog>()
 
 ObjectRelationMapper.AddTypeHandler(def);
 ```
-
-## Model
-```cs
-public class Blog
-{
-    public int? BlogId { get; set; }
-    public string Url { get; set; } = string.Empty;
-}
-```
-
 
 # Features
 ## General
