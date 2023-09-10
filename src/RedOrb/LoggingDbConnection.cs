@@ -16,7 +16,9 @@ public class LoggingDbConnection : IDbConnection, ILogger
 	private IDbConnection Connection { get; init; }
 
 	#region "implements interface"
+#pragma warning disable CS8767
 	public string ConnectionString { get => Connection.ConnectionString; set => Connection.ConnectionString = value; }
+#pragma warning restore CS8767
 
 	public int ConnectionTimeout => Connection.ConnectionTimeout;
 
@@ -51,7 +53,7 @@ public class LoggingDbConnection : IDbConnection, ILogger
 
 	public void Dispose()
 	{
-		Connection.Dispose();
+		GC.SuppressFinalize(this);
 	}
 
 	public void Open()
