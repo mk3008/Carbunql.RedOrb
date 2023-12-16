@@ -4,7 +4,19 @@ namespace RedOrb;
 
 public class DbColumnDefinition
 {
-	public string Identifer { get; set; } = string.Empty;
+	private string _identifer = string.Empty;
+
+	public string Identifer
+	{
+		get
+		{
+			return string.IsNullOrEmpty(_identifer) ? ColumnName : _identifer;
+		}
+		set
+		{
+			_identifer = value;
+		}
+	}
 
 	public required string ColumnName { get; set; }
 
