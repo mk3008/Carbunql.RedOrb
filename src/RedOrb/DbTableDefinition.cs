@@ -21,6 +21,13 @@ public class DbTableDefinition : IDbTableDefinition
 	public List<string> ChildIdentifers { get; init; } = new();
 
 	public virtual Type? Type { get; } = null;
+
+	public string TableFullName => GetTableFullName();
+
+	private string GetTableFullName()
+	{
+		return string.IsNullOrEmpty(SchemaName) ? TableName : SchemaName + "." + TableName;
+	}
 }
 
 public class DbTableDefinition<T> : DbTableDefinition
