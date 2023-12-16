@@ -1,8 +1,6 @@
 ﻿using Carbunql;
 using Carbunql.Building;
-using Carbunql.Dapper;
 using Cysharp.Text;
-using Dapper;
 using Microsoft.Extensions.Logging;
 using RedOrb.Mapping;
 using System.Collections;
@@ -27,7 +25,7 @@ public static class IDbConnectionExtension
 		};
 
 		executor.Execute(tabledef.ToCreateTableCommandText());
-		foreach (var item in tabledef.ToCreateIndexCommandTexts()) connection.Execute(item);
+		foreach (var item in tabledef.ToCreateIndexCommandTexts()) executor.Execute(item);
 	}
 
 	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeReadRule? rule = null)
