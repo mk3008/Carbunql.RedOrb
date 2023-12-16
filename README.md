@@ -1,4 +1,10 @@
 # RedOrb
+![GitHub](https://img.shields.io/github/license/mk3008/RedOrb)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mk3008/RedOrb)
+![Github Last commit](https://img.shields.io/github/last-commit/mk3008/RedOrb)  
+[![SqModel](https://img.shields.io/nuget/v/RedOrb.svg)](https://www.nuget.org/packages/RedOrb/) 
+[![SqModel](https://img.shields.io/nuget/dt/RedOrb.svg)](https://www.nuget.org/packages/RedOrb/) 
+
 Simple, Intuitive, ORM
 
 ORM for people who simply want to access a database.
