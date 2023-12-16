@@ -8,5 +8,12 @@ public class DbTable : IDbTable
 
 	public List<string> ColumnNames { get; init; } = new();
 
+	public string TableFullName => GetTableFullName();
+
 	IEnumerable<string> IDbTable.ColumnNames => ColumnNames;
+
+	private string GetTableFullName()
+	{
+		return string.IsNullOrEmpty(SchemaName) ? TableName : SchemaName + "." + TableName;
+	}
 }

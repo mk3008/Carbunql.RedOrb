@@ -263,7 +263,8 @@ public static class IDbConnectionExtension
 			}
 		};
 
-		var loadMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Load))!.MakeGenericMethod(children.GenericType);
+		var method = typeof(IDbConnectionExtension).GetMethods().Where(x => x.Name == nameof(Load)).First();
+		var loadMethod = method.MakeGenericMethod(children.GenericType);
 		var items = (IEnumerable?)loadMethod.Invoke(null, new object[] { connection, injector, rule });
 		if (items == null) throw new NullReferenceException("Load method return value is NULL");
 		foreach (var item in items)
