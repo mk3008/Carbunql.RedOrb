@@ -19,6 +19,6 @@ public class UnitTestLogger : ILogger
 
 	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 	{
-		Output.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [{logLevel}] {formatter(state, exception)}");
+		Output.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [{logLevel}] {formatter(state, exception)}");
 	}
 }

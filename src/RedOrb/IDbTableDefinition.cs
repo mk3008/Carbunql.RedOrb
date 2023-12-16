@@ -48,7 +48,7 @@ public static class IDbTableDefinitionExtention
 		{
 			var columnText = string.Join(", ", pkeys.Select(x => ValueParser.Parse(x.ColumnName).ToText()));
 			if (sb.Length > 0) sb.AppendLine(", ");
-			sb.Append("primary key(" + string.Join(", ", columnText) + ")");
+			sb.Append("    primary key(" + string.Join(", ", columnText) + ")");
 		}
 
 		var ukeys = source.ColumnDefinitions.Where(x => x.IsUniqueKey).ToList();
@@ -56,7 +56,7 @@ public static class IDbTableDefinitionExtention
 		{
 			var columnText = string.Join(", ", ukeys.Select(x => ValueParser.Parse(x.ColumnName).ToText()));
 			if (sb.Length > 0) sb.AppendLine(", ");
-			sb.Append("unique(" + string.Join(", ", columnText) + ")");
+			sb.Append("    unique(" + string.Join(", ", columnText) + ")");
 		}
 
 		var sql = @$"create table if not exists {table} (
