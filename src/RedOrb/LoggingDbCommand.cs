@@ -50,6 +50,27 @@ public class LoggingDbCommand : IDbCommand
 		Logger.Log(LogLevel, callerMethodName + ";\n" + GetParameterText() + CommandText + ";");
 	}
 
+	private void WriteExecuteResultLog(int rows, [CallerMemberName] string callerMethodName = "unknown")
+	{
+		Logger.Log(LogLevel, callerMethodName + " result : " + rows);
+	}
+
+	private void WriteExecuteScalarLog(object? value, [CallerMemberName] string callerMethodName = "unknown")
+	{
+		if (value == null)
+		{
+			Logger.Log(LogLevel, callerMethodName + " return : NULL");
+		}
+		else if (value.GetType() == typeof(string))
+		{
+			Logger.Log(LogLevel, callerMethodName + $" return : '{value}'");
+		}
+		else
+		{
+			Logger.Log(LogLevel, callerMethodName + $" return : {value}");
+		}
+	}
+
 	#region "implements interface"
 
 	public string CommandText { get => DbCommand.CommandText; set => DbCommand.CommandText = value; }
@@ -84,7 +105,9 @@ public class LoggingDbCommand : IDbCommand
 	public int ExecuteNonQuery()
 	{
 		WriteLog();
-		return DbCommand.ExecuteNonQuery();
+		var val = DbCommand.ExecuteNonQuery();
+		WriteExecuteResultLog(val);
+		return val;
 	}
 
 	public IDataReader ExecuteReader()
@@ -102,7 +125,9 @@ public class LoggingDbCommand : IDbCommand
 	public object? ExecuteScalar()
 	{
 		WriteLog();
-		return DbCommand.ExecuteScalar();
+		var val = DbCommand.ExecuteScalar();
+		WriteExecuteScalarLog(val);
+		return val;
 	}
 
 	public void Prepare()
