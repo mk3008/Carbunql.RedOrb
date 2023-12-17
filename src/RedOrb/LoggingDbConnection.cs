@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Data;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace RedOrb;
 
-public class LoggingDbConnection : IDbConnection, ILogger
+public class LoggingDbConnection : IDbConnection
 {
 	public LoggingDbConnection(IDbConnection connection, ILogger logger)
 	{
@@ -14,6 +16,8 @@ public class LoggingDbConnection : IDbConnection, ILogger
 	private ILogger Logger { get; init; }
 
 	private IDbConnection Connection { get; init; }
+
+	public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
 	#region "implements interface"
 #pragma warning disable CS8767
@@ -28,7 +32,9 @@ public class LoggingDbConnection : IDbConnection, ILogger
 
 	public IDbTransaction BeginTransaction()
 	{
-		return Connection.BeginTransaction();
+		var trn = Connection.BeginTransaction();
+		var ltrn = new LoggingDbTransaction(trn, Logger) { LogLevel = LogLevel };
+		return ltrn;
 	}
 
 	public IDbTransaction BeginTransaction(IsolationLevel il)
@@ -48,7 +54,12 @@ public class LoggingDbConnection : IDbConnection, ILogger
 
 	public IDbCommand CreateCommand()
 	{
-		return Connection.CreateCommand();
+		var cmd = Connection.CreateCommand();
+		var logcmd = new LoggingDbCommand(cmd, Logger)
+		{
+			LogLevel = LogLevel
+		};
+		return logcmd;
 	}
 
 	public void Dispose()
