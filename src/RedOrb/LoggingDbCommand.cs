@@ -73,7 +73,9 @@ public class LoggingDbCommand : IDbCommand
 
 	#region "implements interface"
 
+#pragma warning disable CS8767 // パラメーターの型における参照型の NULL 値の許容が、暗黙的に実装されるメンバーと一致しません。おそらく、NULL 値の許容の属性が原因です。
 	public string CommandText { get => DbCommand.CommandText; set => DbCommand.CommandText = value; }
+#pragma warning restore CS8767 // パラメーターの型における参照型の NULL 値の許容が、暗黙的に実装されるメンバーと一致しません。おそらく、NULL 値の許容の属性が原因です。
 
 	public int CommandTimeout { get => DbCommand.CommandTimeout; set => DbCommand.CommandTimeout = value; }
 

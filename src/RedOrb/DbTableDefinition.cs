@@ -20,7 +20,7 @@ public class DbTableDefinition : IDbTableDefinition
 
 	public List<string> ChildIdentifers { get; init; } = new();
 
-	public virtual Type? Type { get; } = null;
+	public virtual Type Type { get; } = null!;
 
 	public string TableFullName => GetTableFullName();
 

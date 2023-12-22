@@ -14,7 +14,7 @@ public interface IDbTableDefinition : IDbTable
 
 	List<DbIndexDefinition> Indexes { get; }
 
-	Type? Type { get; }
+	Type Type { get; }
 
 	List<DbParentRelationDefinition> ParentRelations { get; }
 
@@ -144,18 +144,16 @@ public static class IDbTableDefinitionExtention
 
 	public static (InsertQuery Query, DbColumnDefinition? Sequence) ToInsertQuery<T>(this IDbTableDefinition source, T instance, string placeholderIdentifer)
 	{
-		var seq = source.GetSequenceOrDefault();
-
 		var row = new ValueCollection();
 		var cols = new List<string>();
 
 		foreach (var item in source.ColumnDefinitions)
 		{
 			if (string.IsNullOrEmpty(item.Identifer)) continue;
+			if (item.IsAutoNumber) continue;
 
 			var prop = item.Identifer.ToPropertyInfo<T>();
 			var pv = prop.ToParameterValue(instance, placeholderIdentifer);
-			if (item == seq && pv.Value == null) continue;
 
 			row.Add(pv);
 			cols.Add(item.ColumnName);
@@ -189,6 +187,7 @@ public static class IDbTableDefinitionExtention
 		var vq = new ValuesQuery(new List<ValueCollection>() { row });
 		var query = vq.ToSelectQuery(cols).ToInsertQuery(source.GetTableFullName());
 
+		var seq = source.GetSequenceOrDefault();
 		if (seq != null) query.Returning(new ColumnValue(seq.ColumnName));
 
 		return (query, seq);
