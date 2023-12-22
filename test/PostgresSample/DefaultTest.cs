@@ -34,8 +34,41 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		Assert.Null(newBlog.BlogId);
 		cn.Save(newBlog);
 		Assert.NotNull(newBlog.BlogId);
+	}
 
-		trn.Commit();
+	[Fact]
+	public void CreateTest_ZeroId()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
+		using var trn = cn.BeginTransaction();
+
+		// Create
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { BlogId = 0, Url = "http://blogs.msdn.com/adonet/DefaultTest/CreateTest" };
+
+		Assert.Equal(0, newBlog.BlogId);
+		cn.Save(newBlog);
+		Assert.NotEqual(0, newBlog.BlogId);
+	}
+
+	[Fact]
+	public void CreateTest_ValueSpecifiedError()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
+		using var trn = cn.BeginTransaction();
+
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { BlogId = 1, Url = "http://blogs.msdn.com/adonet/DefaultTest/CreateTest" };
+
+		// update error
+		Assert.NotNull(newBlog.BlogId);
+		Assert.NotEqual(0, newBlog.BlogId);
+
+		var exception = Assert.Throws<InvalidOperationException>(() =>
+		{
+			cn.Save(newBlog);
+		});
+		Assert.Equal("There is no update target. The primary key value is incorrect or there is an update conflict.(type:PostgresSample.Blog, key:BlogId=1)", exception.Message);
 	}
 
 	[Fact]
@@ -58,8 +91,6 @@ public class DefaultTest : IClassFixture<PostgresDB>
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -85,8 +116,6 @@ public class DefaultTest : IClassFixture<PostgresDB>
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -110,7 +139,5 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		}).FirstOrDefault();
 
 		Assert.Null(loadedBlog);
-
-		trn.Commit();
 	}
 }

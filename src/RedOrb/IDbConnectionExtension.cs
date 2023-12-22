@@ -75,7 +75,7 @@ public static class IDbConnectionExtension
 
 		var seq = def.GetSequenceOrDefault() ?? throw new NotSupportedException("AutoNumber column not found.");
 		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
-		if (id == null)
+		if (id.IsEmptyId())
 		{
 			connection.Insert(instance);
 		}
@@ -143,6 +143,12 @@ public static class IDbConnectionExtension
 	public static void UpdateByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
 	{
 		var q = def.ToUpdateQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
+		var keys = def.GetPrimaryKeys();
+
+		if (!keys.Any())
+		{
+			throw new InvalidProgramException($"primary key not defined.(type:{def.Type.FullName})");
+		}
 
 		var executor = new QueryExecutor()
 		{
@@ -150,7 +156,27 @@ public static class IDbConnectionExtension
 			Logger = (connection is ILogger lg) ? lg : null,
 			Timeout = ObjectRelationMapper.Timeout
 		};
-		executor.Execute(q, instance);
+		var val = executor.Execute(q, instance);
+		if (val == 0)
+		{
+			var sb = ZString.CreateStringBuilder();
+			foreach (var key in keys)
+			{
+				if (sb.Length > 0) sb.Append(',');
+
+				var prop = key.Identifer.ToPropertyInfo<T>();
+				var v = prop.GetValue(instance, null);
+				sb.Append(prop.Name);
+				sb.Append("=");
+				sb.Append(v);
+			}
+
+			throw new InvalidOperationException($"There is no update target. The primary key value is incorrect or there is an update conflict.(type:{def.Type.FullName}, key:{sb})");
+		}
+		else if (val != 1)
+		{
+			throw new InvalidProgramException($"You are trying to update multiple items. The primary key definition is incorrect.(type:{def.Type.FullName})");
+		}
 	}
 
 	public static void Delete<T>(this IDbConnection connection, IEnumerable<T> instances)
