@@ -162,7 +162,7 @@ public static class IDbConnectionExtension
 			var sb = ZString.CreateStringBuilder();
 			foreach (var key in keys)
 			{
-				if (sb.Length > 0) sb.Append(',');
+				if (sb.Length > 0) sb.Append(" and ");
 
 				var prop = key.Identifer.ToPropertyInfo<T>();
 				var v = prop.GetValue(instance, null);
@@ -270,10 +270,11 @@ public static class IDbConnectionExtension
 
 	public static void Fetch<T>(this IDbConnection connection, T instance, string collectionProperty)
 	{
-		var vals = GetPrimaryKeyValues(instance);
+		var keyvalues = GetPrimaryKeyValues(instance);
 
 		var children = GetChildren(instance, collectionProperty);
 		var relation = GetParentRelation<T>(children);
+		var parent = ObjectRelationMapper.FindFirst<T>();
 
 		var rule = new CascadeReadRule();
 		rule.CascadeRelationRules.Add(new() { FromType = children.GenericType, ToType = typeof(T) });
@@ -281,9 +282,12 @@ public static class IDbConnectionExtension
 
 		var injector = (SelectQuery x) =>
 		{
-			for (int i = 0; i < relation.ColumnNames.Count(); i++)
+			var i = 0;
+			foreach (var item in keyvalues)
 			{
-				x.Where(x.FromClause!, relation.ColumnNames[i]).Equal(x.AddParameter($"{ObjectRelationMapper.PlaceholderIdentifer}key{i}", vals[i]));
+				var parameter = x.AddParameter($"{ObjectRelationMapper.PlaceholderIdentifer}key{i}", item.Value);
+				x.Where(x.FromClause!, item.Key.ColumnName).Equal(parameter);
+				i++;
 			}
 		};
 
@@ -297,10 +301,10 @@ public static class IDbConnectionExtension
 		}
 	}
 
-	private static List<object?> GetPrimaryKeyValues<T>(T instance)
+	private static Dictionary<DbColumnDefinition, object?> GetPrimaryKeyValues<T>(T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		return def.GetPrimaryKeys().Select(x => x.Identifer.ToPropertyInfo<T>().GetValue(instance)).ToList();
+		return def.GetPrimaryKeys().ToDictionary(x => x, x => x.Identifer.ToPropertyInfo<T>().GetValue(instance));
 	}
 
 	private static List<ValueMap> GetPrimaryKeyValueMaps<T>(T instance)

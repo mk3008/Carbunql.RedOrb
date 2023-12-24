@@ -39,8 +39,8 @@ internal static class SelectQueryExtension
 		var destination = ObjectRelationMapper.FindFirst(relation.IdentiferType);
 		bool isNullable = Nullable.GetUnderlyingType(relation.IdentiferType) != null;
 
-		var fromKeys = relation.ColumnNames;
-		var toKeys = destination.GetPrimaryKeys();
+		var keys = destination.GetPrimaryKeys();
+
 		var joinType = isNullable ? "left join" : "inner join";
 
 		var index = sq.GetSelectableTables().Count();
@@ -57,18 +57,20 @@ internal static class SelectQueryExtension
 		var t = sq.FromClause!.Join(destination.SchemaName, destination.TableName, joinType).As("t" + index).On(x =>
 		{
 			ValueBase? condition = null;
-			for (int i = 0; i < fromKeys.Count; i++)
+
+			foreach (var key in keys)
 			{
 				if (condition == null)
 				{
-					condition = new ColumnValue(fromMap.TableAlias, fromKeys[i]);
+					condition = new ColumnValue(fromMap.TableAlias, key.ColumnName);
 				}
 				else
 				{
-					condition.And(fromMap.TableAlias, fromKeys[i]);
+					condition.And(fromMap.TableAlias, key.ColumnName);
 				}
-				condition.Equal(x.Table.Alias, toKeys[i].ColumnName);
+				condition.Equal(x.Table.Alias, key.ColumnName);
 			}
+
 			if (condition == null) throw new InvalidOperationException();
 			return condition;
 		});

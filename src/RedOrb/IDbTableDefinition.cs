@@ -167,20 +167,21 @@ public static class IDbTableDefinitionExtention
 
 			var def = ObjectRelationMapper.FindFirst(parent.IdentiferType);
 			var pkeys = def.GetPrimaryKeys();
-			for (int i = 0; i < parent.ColumnNames.Count; i++)
+
+			foreach (var relation in parent.GetParentRelationColumnDefinitions())
 			{
-				var p = pkeys[i].Identifer.ToPropertyInfo(parentType);
+				var prop = relation.Identifer.ToPropertyInfo(parentType);
 				if (parentInstance != null)
 				{
-					var pv = p.ToParameterValue(parentInstance, placeholderIdentifer);
+					var pv = prop.ToParameterValue(parentInstance, placeholderIdentifer);
 					row.Add(pv);
 				}
 				else
 				{
-					var pv = p.ToParameterNullValue(placeholderIdentifer);
+					var pv = prop.ToParameterNullValue(placeholderIdentifer);
 					row.Add(pv);
 				}
-				cols.Add(parent.ColumnNames[i]);
+				cols.Add(relation.ColumnName);
 			}
 		}
 

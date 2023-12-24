@@ -33,7 +33,8 @@ public class DbParentRelationDefinition
 {
 	public required Type IdentiferType { get; set; }
 
-	public List<string> ColumnNames { get; set; } = new();
+	[Obsolete]
+	public List<string> ParentIdentifers { get; set; } = new();
 
 	public required string Identifer { get; set; }
 
@@ -41,20 +42,36 @@ public class DbParentRelationDefinition
 
 	//public List<string> AlterIdentifers { get; set; } = new();
 
+	public List<DbColumnDefinition> GetParentRelationColumnDefinitions()
+	{
+		var lst = new List<DbColumnDefinition>();
+		var def = ObjectRelationMapper.FindFirst(IdentiferType);
+		var keys = def.GetPrimaryKeys();
+
+		foreach (var key in keys)
+		{
+			var type = key.RelationColumnType;
+			if (string.IsNullOrEmpty(type))
+			{
+				throw new InvalidProgramException($"RelationColumnType is required when used in a join expression.(type:{def.Type.FullName}, column:{key.ColumnName})");
+			}
+			lst.Add(key);
+		}
+
+		return lst;
+	}
+
 	public List<string> ToCommandTexts()
 	{
 		var lst = new List<string>();
-		var def = ObjectRelationMapper.FindFirst(IdentiferType);
-		var pkeys = def.GetPrimaryKeys();
 
-		for (int i = 0; i < ColumnNames.Count; i++)
+		foreach (var relation in GetParentRelationColumnDefinitions())
 		{
-			var name = ColumnNames[i];
-			var type = pkeys[i].RelationColumnType;
-			var sql = $"{name} {type}";
+			var sql = $"{relation.ColumnName} {relation.RelationColumnType}";
 			if (!IsNullable) { sql += " not null"; }
 			lst.Add(sql);
 		}
+
 		return lst;
 	}
 }
