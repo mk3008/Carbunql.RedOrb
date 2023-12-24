@@ -57,18 +57,20 @@ internal static class SelectQueryExtension
 		var t = sq.FromClause!.Join(destination.SchemaName, destination.TableName, joinType).As("t" + index).On(x =>
 		{
 			ValueBase? condition = null;
-			for (int i = 0; i < keys.Count; i++)
+
+			foreach (var key in keys)
 			{
 				if (condition == null)
 				{
-					condition = new ColumnValue(fromMap.TableAlias, keys[i].ColumnName);
+					condition = new ColumnValue(fromMap.TableAlias, key.ColumnName);
 				}
 				else
 				{
-					condition.And(fromMap.TableAlias, keys[i].ColumnName);
+					condition.And(fromMap.TableAlias, key.ColumnName);
 				}
-				condition.Equal(x.Table.Alias, keys[i].ColumnName);
+				condition.Equal(x.Table.Alias, key.ColumnName);
 			}
+
 			if (condition == null) throw new InvalidOperationException();
 			return condition;
 		});
