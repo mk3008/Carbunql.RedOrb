@@ -99,7 +99,7 @@ public static class DbTableDefinitionRepository
 				new () {Identifer = nameof(Post.Content), ColumnName = "content", ColumnType= "text"},
 			},
 			ParentRelations = {
-				new () {Identifer = nameof(Post.Blog), ParentIdentifers = { nameof(Blog.BlogId) } , IdentiferType = typeof(Blog)}
+				new () {Identifer = nameof(Post.Blog), IdentiferType = typeof(Blog)}
 			},
 			ChildIdentifers = {
 				nameof(Post.Comments)
@@ -118,7 +118,7 @@ public static class DbTableDefinitionRepository
 				new () {Identifer = nameof(Comment.CommentText), ColumnName = "comment_text", ColumnType= "text"},
 			},
 			ParentRelations = {
-				new () {Identifer = nameof(Comment.Post), ParentIdentifers = { nameof(Post.PostId) } , IdentiferType = typeof(Post)}
+				new () {Identifer = nameof(Comment.Post), IdentiferType = typeof(Post)}
 			}
 		};
 	}

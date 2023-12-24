@@ -168,20 +168,9 @@ public static class IDbTableDefinitionExtention
 			var def = ObjectRelationMapper.FindFirst(parent.IdentiferType);
 			var pkeys = def.GetPrimaryKeys();
 
-			foreach (var identifer in parent.ParentIdentifers)
+			foreach (var relation in parent.GetParentRelationColumnDefinitions())
 			{
-				var key = pkeys.Where(x => x.Identifer == identifer).FirstOrDefault();
-				if (key == null)
-				{
-					throw new InvalidProgramException($"A column that is not a primary key is specified.(type:{def.Type.FullName}, identifer:{identifer}");
-				}
-				var type = key.RelationColumnType;
-				if (string.IsNullOrEmpty(type))
-				{
-					throw new InvalidProgramException($"RelationColumnType is required when used in a join expression.(type:{def.Type.FullName}, column:{key.ColumnName})");
-				}
-
-				var prop = identifer.ToPropertyInfo(parentType);
+				var prop = relation.Identifer.ToPropertyInfo(parentType);
 				if (parentInstance != null)
 				{
 					var pv = prop.ToParameterValue(parentInstance, placeholderIdentifer);
@@ -192,7 +181,7 @@ public static class IDbTableDefinitionExtention
 					var pv = prop.ToParameterNullValue(placeholderIdentifer);
 					row.Add(pv);
 				}
-				cols.Add(key.ColumnName);
+				cols.Add(relation.ColumnName);
 			}
 		}
 
