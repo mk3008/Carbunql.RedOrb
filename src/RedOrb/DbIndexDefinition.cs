@@ -33,7 +33,7 @@ public class DbParentRelationDefinition
 {
 	public required Type IdentiferType { get; set; }
 
-	public List<string> ColumnNames { get; set; } = new();
+	public List<string> ParentIdentifers { get; set; } = new();
 
 	public required string Identifer { get; set; }
 
@@ -47,14 +47,24 @@ public class DbParentRelationDefinition
 		var def = ObjectRelationMapper.FindFirst(IdentiferType);
 		var pkeys = def.GetPrimaryKeys();
 
-		for (int i = 0; i < ColumnNames.Count; i++)
+		foreach (var identifer in ParentIdentifers)
 		{
-			var name = ColumnNames[i];
-			var type = pkeys[i].RelationColumnType;
-			var sql = $"{name} {type}";
+			var key = pkeys.Where(x => x.Identifer == identifer).FirstOrDefault();
+			if (key == null)
+			{
+				throw new InvalidProgramException($"A column that is not a primary key is specified.(type:{def.Type.FullName}, identifer:{identifer}");
+			}
+			var type = key.RelationColumnType;
+			if (string.IsNullOrEmpty(type))
+			{
+				throw new InvalidProgramException($"RelationColumnType is required when used in a join expression.(type:{def.Type.FullName}, column:{key.ColumnName})");
+			}
+
+			var sql = $"{key.ColumnName} {type}";
 			if (!IsNullable) { sql += " not null"; }
 			lst.Add(sql);
 		}
+
 		return lst;
 	}
 }
