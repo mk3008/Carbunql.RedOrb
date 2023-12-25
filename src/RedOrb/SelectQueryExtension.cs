@@ -34,13 +34,10 @@ internal static class SelectQueryExtension
 		});
 	}
 
-	public static List<TypeMap> AddJoin(this SelectQuery sq, DbParentRelationDefinition relation, TypeMap fromMap, ICascadeReadRule rule, bool doSelectPKeyOnly)
+	public static List<TypeMap> AddJoin(this SelectQuery sq, DbParentRelationDefinition container, TypeMap fromMap, ICascadeReadRule rule, bool doSelectPKeyOnly)
 	{
-		var destination = ObjectRelationMapper.FindFirst(relation.IdentiferType);
-		bool isNullable = Nullable.GetUnderlyingType(relation.IdentiferType) != null;
-
-		var keys = destination.GetPrimaryKeys();
-
+		var destination = ObjectRelationMapper.FindFirst(container.IdentiferType);
+		bool isNullable = Nullable.GetUnderlyingType(container.IdentiferType) != null;
 		var joinType = isNullable ? "left join" : "inner join";
 
 		var index = sq.GetSelectableTables().Count();
@@ -48,31 +45,19 @@ internal static class SelectQueryExtension
 		var map = new TypeMap()
 		{
 			TableAlias = "t" + index,
-			Type = relation.IdentiferType,
+			Type = container.IdentiferType,
 			ColumnMaps = new(),
-			RelationMap = new() { OwnerTableAlias = fromMap.TableAlias, OwnerPropertyName = relation.Identifer },
+			RelationMap = new() { OwnerTableAlias = fromMap.TableAlias, OwnerPropertyName = container.Identifer },
 		};
 		var maps = new List<TypeMap>() { map };
 
 		var t = sq.FromClause!.Join(destination.SchemaName, destination.TableName, joinType).As("t" + index).On(x =>
 		{
-			ValueBase? condition = null;
-
-			foreach (var key in keys)
+			foreach (var item in container.Relations)
 			{
-				if (condition == null)
-				{
-					condition = new ColumnValue(fromMap.TableAlias, key.ColumnName);
-				}
-				else
-				{
-					condition.And(fromMap.TableAlias, key.ColumnName);
-				}
-				condition.Equal(x.Table.Alias, key.ColumnName);
+				var parentColumn = destination.GetPrimaryKeys().Where(x => x.Identifer == item.ParentIdentifer).First();
+				x.Condition(new ColumnValue(fromMap.TableAlias, item.ColumnName).Equal(x.Table.Alias, parentColumn.ColumnName));
 			}
-
-			if (condition == null) throw new InvalidOperationException();
-			return condition;
 		});
 
 		sq.AddSelectPrimarykeyColumns(destination, map);
@@ -80,7 +65,7 @@ internal static class SelectQueryExtension
 		if (doSelectPKeyOnly) return maps;
 
 		sq.AddSelectColumnsWithoutPrimaryKeys(destination, map);
-		destination.ParentRelations.ForEach(relation =>
+		destination.ParentRelationDefinitions.ToList().ForEach(relation =>
 		{
 			var doCascade = rule.DoCascade(destination.Type!, relation.IdentiferType);
 			maps.AddRange(sq.AddJoin(relation, map, rule, doSelectPKeyOnly: !doCascade));

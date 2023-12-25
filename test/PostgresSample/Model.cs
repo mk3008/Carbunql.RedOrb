@@ -72,17 +72,33 @@ public static class DbTableDefinitionRepository
 		return new DbTableDefinition<Blog>()
 		{
 			TableName = "blogs",
-			ColumnDefinitions =
+			ColumnContainers =
 			{
-				new () {Identifer = nameof(Blog.BlogId), ColumnName = "blog_id", ColumnType= "serial8", RelationColumnType = "bigint", IsPrimaryKey= true, IsAutoNumber = true},
-				new () {Identifer = nameof(Blog.Url), ColumnName = "url", ColumnType= "text"},
+				new DbColumnDefinition  {
+					Identifer = nameof(Blog.BlogId),
+					ColumnName = "blog_id",
+					ColumnType= "serial8",
+					RelationColumnType = "bigint",
+					IsPrimaryKey= true,
+					IsAutoNumber = true
+				},
+				new DbColumnDefinition {
+					Identifer = nameof(Blog.Url),
+					ColumnName = "url",
+					ColumnType= "text"
+				},
 			},
 			ChildIdentifers = {
 				nameof(Blog.Posts)
 			},
 			Indexes =
 			{
-				new() {Identifers = { nameof(Blog.Url) }, IsUnique = true},
+				new DbIndexDefinition {
+					Identifers = {
+						nameof(Blog.Url)
+					},
+					IsUnique = true
+				},
 			}
 		};
 	}
@@ -92,14 +108,40 @@ public static class DbTableDefinitionRepository
 		return new DbTableDefinition<Post>()
 		{
 			TableName = "posts",
-			ColumnDefinitions =
+			ColumnContainers =
 			{
-				new () {Identifer = nameof(Post.PostId), ColumnName = "post_id", ColumnType= "serial8", RelationColumnType = "bigint", IsPrimaryKey= true, IsAutoNumber = true},
-				new () {Identifer = nameof(Post.Title), ColumnName = "title", ColumnType= "text"},
-				new () {Identifer = nameof(Post.Content), ColumnName = "content", ColumnType= "text"},
-			},
-			ParentRelations = {
-				new () {Identifer = nameof(Post.Blog), IdentiferType = typeof(Blog)}
+				new DbColumnDefinition {
+					Identifer = nameof(Post.PostId),
+					ColumnName = "post_id",
+					ColumnType= "serial8",
+					RelationColumnType = "bigint",
+					IsPrimaryKey= true,
+					IsAutoNumber = true
+				},
+				new DbParentRelationDefinition
+				{
+					Identifer = nameof(Post.Blog),
+					IdentiferType= typeof(Blog),
+					Relations = new()
+					{
+						new DbParentRelationColumnDefinition()
+						{
+							ColumnName = "owner_blog_id",
+							ColumnType = "bigint",
+							ParentIdentifer = nameof(Post.Blog.BlogId),
+						}
+					}
+				},
+				new DbColumnDefinition {
+					Identifer = nameof(Post.Title),
+					ColumnName = "title",
+					ColumnType= "text"
+				},
+				new DbColumnDefinition {
+					Identifer = nameof(Post.Content),
+					ColumnName = "content",
+					ColumnType = "text"
+				},
 			},
 			ChildIdentifers = {
 				nameof(Post.Comments)
@@ -112,13 +154,34 @@ public static class DbTableDefinitionRepository
 		return new DbTableDefinition<Comment>()
 		{
 			TableName = "post_comments",
-			ColumnDefinitions =
+			ColumnContainers =
 			{
-				new () {Identifer = nameof(Comment.CommentId), ColumnName = "comment_id", ColumnType= "serial8", RelationColumnType = "bigint", IsPrimaryKey= true, IsAutoNumber = true},
-				new () {Identifer = nameof(Comment.CommentText), ColumnName = "comment_text", ColumnType= "text"},
-			},
-			ParentRelations = {
-				new () {Identifer = nameof(Comment.Post), IdentiferType = typeof(Post)}
+				new DbColumnDefinition {
+					Identifer = nameof(Comment.CommentId),
+					ColumnName = "comment_id",
+					ColumnType= "serial8",
+					RelationColumnType = "bigint",
+					IsPrimaryKey= true,
+					IsAutoNumber = true
+				},
+				new DbParentRelationDefinition {
+					Identifer = nameof(Comment.Post),
+					IdentiferType = typeof(Post),
+					Relations = new()
+					{
+						new DbParentRelationColumnDefinition()
+						{
+							ColumnName = "owner_post_id",
+							ColumnType = "bigint",
+							ParentIdentifer = nameof(Comment.Post.PostId),
+						}
+					}
+				},
+				new DbColumnDefinition {
+					Identifer = nameof(Comment.CommentText),
+					ColumnName = "comment_text",
+					ColumnType= "text"
+				},
 			}
 		};
 	}

@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace RedOrb;
 
 public static class ObjectRelationMapper
 {
-	//public static ILogger? Logger { get; set; }
-
 	public static string PlaceholderIdentifer { get; set; } = "@";
 
 	public static int Timeout { get; set; } = 30;

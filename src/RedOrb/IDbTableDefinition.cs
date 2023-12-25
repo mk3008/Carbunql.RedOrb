@@ -16,7 +16,7 @@ public interface IDbTableDefinition : IDbTable
 
 	Type Type { get; }
 
-	List<DbParentRelationDefinition> ParentRelations { get; }
+	IEnumerable<DbParentRelationDefinition> ParentRelationDefinitions { get; }
 
 	List<string> ChildIdentifers { get; }
 }
@@ -28,18 +28,13 @@ public static class IDbTableDefinitionExtention
 		var table = ValueParser.Parse(source.GetTableFullName()).ToText();
 
 		var sb = ZString.CreateStringBuilder();
+
 		foreach (var column in source.ColumnDefinitions)
 		{
-			if (sb.Length > 0) sb.AppendLine(", ");
-			sb.Append("    " + column.ToCommandText());
-		}
-
-		foreach (var parent in source.ParentRelations)
-		{
-			if (sb.Length > 0) sb.AppendLine(", ");
-			foreach (var text in parent.ToCommandTexts())
+			foreach (var item in column.GetCreateTableCommandTexts())
 			{
-				sb.Append("    " + text);
+				if (sb.Length > 0) sb.AppendLine(", ");
+				sb.Append("    " + item);
 			}
 		}
 
@@ -94,7 +89,7 @@ public static class IDbTableDefinitionExtention
 
 	public static List<DbColumnDefinition> GetPrimaryKeys(this IDbTableDefinition source)
 	{
-		var lst = source.ColumnDefinitions.Where(x => x.IsPrimaryKey && !string.IsNullOrEmpty(x.Identifer)).ToList();
+		var lst = source.ColumnDefinitions.Where(x => x.IsPrimaryKey).ToList();
 		if (!lst.Any()) throw new NotSupportedException($"Primary key column not defined in {source.GetTableFullName()}");
 		return lst;
 	}
@@ -133,7 +128,7 @@ public static class IDbTableDefinitionExtention
 
 		rule ??= new FullCascadeReadRule();
 
-		source.ParentRelations.ForEach(relation =>
+		source.ParentRelationDefinitions.ToList().ForEach(relation =>
 		{
 			var doCascade = rule.DoCascade(source.Type!, relation.IdentiferType);
 			maps.AddRange(sq.AddJoin(relation, fromMap, rule, doSelectPKeyOnly: !doCascade));
@@ -147,7 +142,7 @@ public static class IDbTableDefinitionExtention
 		var row = new ValueCollection();
 		var cols = new List<string>();
 
-		foreach (var item in source.ColumnDefinitions)
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.None))
 		{
 			if (string.IsNullOrEmpty(item.Identifer)) continue;
 			if (item.IsAutoNumber) continue;
@@ -159,7 +154,7 @@ public static class IDbTableDefinitionExtention
 			cols.Add(item.ColumnName);
 		}
 
-		foreach (var parent in source.ParentRelations)
+		foreach (var parent in source.ParentRelationDefinitions)
 		{
 			var parentProp = parent.Identifer.ToPropertyInfo<T>();
 			var parentType = parentProp.PropertyType;
@@ -168,9 +163,9 @@ public static class IDbTableDefinitionExtention
 			var def = ObjectRelationMapper.FindFirst(parent.IdentiferType);
 			var pkeys = def.GetPrimaryKeys();
 
-			foreach (var relation in parent.GetParentRelationColumnDefinitions())
+			foreach (var relation in parent.Relations)
 			{
-				var prop = relation.Identifer.ToPropertyInfo(parentType);
+				var prop = relation.ParentIdentifer.ToPropertyInfo(parentType);
 				if (parentInstance != null)
 				{
 					var pv = prop.ToParameterValue(parentInstance, placeholderIdentifer);
