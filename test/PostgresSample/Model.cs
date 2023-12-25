@@ -122,15 +122,16 @@ public static class DbTableDefinitionRepository
 				{
 					Identifer = nameof(Post.Blog),
 					IdentiferType= typeof(Blog),
-					Relations = new()
-					{
-						new DbParentRelationColumnDefinition()
-						{
-							ColumnName = "owner_blog_id",
-							ColumnType = "bigint",
-							ParentIdentifer = nameof(Post.Blog.BlogId),
-						}
-					}
+					//Not required if the columns to be mapped have the same name.
+					//Relations = new()
+					//{
+					//	new DbParentRelationColumnDefinition()
+					//	{
+					//		ColumnName = "blog_id",
+					//		ColumnType = "bigint",
+					//		ParentIdentifer = nameof(Post.Blog.BlogId),
+					//	}
+					//}
 				},
 				new DbColumnDefinition {
 					Identifer = nameof(Post.Title),
@@ -167,6 +168,7 @@ public static class DbTableDefinitionRepository
 				new DbParentRelationDefinition {
 					Identifer = nameof(Comment.Post),
 					IdentiferType = typeof(Post),
+					//Required if the column to be mapped is an alias.
 					Relations = new()
 					{
 						new DbParentRelationColumnDefinition()
