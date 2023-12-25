@@ -1,5 +1,7 @@
 ﻿using Carbunql;
 using Carbunql.Building;
+using Carbunql.Extensions;
+using Carbunql.Tables;
 using Cysharp.Text;
 using Microsoft.Extensions.Logging;
 using RedOrb.Mapping;
@@ -282,11 +284,14 @@ public static class IDbConnectionExtension
 
 		var injector = (SelectQuery x) =>
 		{
+			x.AddComment($"inject pkey filter(type:{typeof(T).Name})");
+			var def = ObjectRelationMapper.FindFirst<T>();
+			var table = x.GetSelectableTables().Where(y => y.Table is PhysicalTable pt && pt.Table.IsEqualNoCase(def.TableFullName)).First();
 			var i = 0;
 			foreach (var item in keyvalues)
 			{
 				var parameter = x.AddParameter($"{ObjectRelationMapper.PlaceholderIdentifer}key{i}", item.Value);
-				x.Where(x.FromClause!, item.Key.ColumnName).Equal(parameter);
+				x.Where(table, item.Key.ColumnName).Equal(parameter);
 				i++;
 			}
 		};
@@ -332,7 +337,7 @@ public static class IDbConnectionExtension
 	private static DbParentRelationDefinition GetParentRelation<ParentT>(Children children)
 	{
 		var def = ObjectRelationMapper.FindFirst(children.GenericType);
-		return def.ParentRelations.Where(x => x.IdentiferType == typeof(ParentT)).First();
+		return def.ParentRelationDefinitions.Where(x => x.IdentiferType == typeof(ParentT)).First();
 	}
 
 	private static Children GetChildren<T>(T instance, string idnetifer)

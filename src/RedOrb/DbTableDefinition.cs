@@ -1,4 +1,6 @@
-﻿namespace RedOrb;
+﻿using System.Collections.Concurrent;
+
+namespace RedOrb;
 
 public class DbTableDefinition : IDbTableDefinition
 {
@@ -8,15 +10,34 @@ public class DbTableDefinition : IDbTableDefinition
 
 	public string Comment { get; set; } = string.Empty;
 
-	public List<DbColumnDefinition> ColumnDefinitions { get; init; } = new();
+	public List<IDbColumnContainer> ColumnContainers { get; init; } = new();
 
-	public IEnumerable<string> ColumnNames => ColumnDefinitions.Select(x => x.ColumnName);
+	public IEnumerable<string> ColumnNames => GetDbColumnDefinitions().Select(x => x.ColumnName);
 
-	IEnumerable<DbColumnDefinition> IDbTableDefinition.ColumnDefinitions => ColumnDefinitions;
+	public IEnumerable<DbColumnDefinition> ColumnDefinitions => GetDbColumnDefinitions();
+
+	private IEnumerable<DbColumnDefinition> GetDbColumnDefinitions()
+	{
+		foreach (var column in ColumnContainers)
+		{
+			foreach (var def in column.GetDbColumnDefinitions())
+			{
+				yield return def;
+			}
+		}
+	}
 
 	public List<DbIndexDefinition> Indexes { get; init; } = new();
 
-	public List<DbParentRelationDefinition> ParentRelations { get; init; } = new();
+	public IEnumerable<DbParentRelationDefinition> ParentRelationDefinitions => GetParentRelations();
+
+	private IEnumerable<DbParentRelationDefinition> GetParentRelations()
+	{
+		foreach (DbParentRelationDefinition relation in ColumnContainers.Where(x => x is DbParentRelationDefinition))
+		{
+			yield return relation;
+		}
+	}
 
 	public List<string> ChildIdentifers { get; init; } = new();
 

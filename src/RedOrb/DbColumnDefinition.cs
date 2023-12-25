@@ -2,21 +2,9 @@
 
 namespace RedOrb;
 
-public class DbColumnDefinition
+public class DbColumnDefinition : IDbColumnContainer
 {
-	private string _identifer = string.Empty;
-
-	public string Identifer
-	{
-		get
-		{
-			return string.IsNullOrEmpty(_identifer) ? ColumnName : _identifer;
-		}
-		set
-		{
-			_identifer = value;
-		}
-	}
+	public string Identifer { get; set; } = string.Empty;
 
 	public required string ColumnName { get; set; }
 
@@ -36,11 +24,14 @@ public class DbColumnDefinition
 
 	public string Comment { get; set; } = string.Empty;
 
-	//public Type? RelationType { get; set; }
-
 	public SpecialColumn SpecialColumn { get; set; } = SpecialColumn.None;
 
-	public string ToCommandText()
+	public IEnumerable<DbColumnDefinition> GetDbColumnDefinitions()
+	{
+		yield return this;
+	}
+
+	public IEnumerable<string> GetCreateTableCommandTexts()
 	{
 		var name = ColumnName;
 		var type = ColumnType;
@@ -49,23 +40,6 @@ public class DbColumnDefinition
 		if (!IsNullable) { sql += " not null"; }
 		if (!string.IsNullOrEmpty(DefaultValue)) { sql += " default " + ValueParser.Parse(DefaultValue).ToText(); }
 
-		return sql;
+		yield return sql;
 	}
-
-	public string ToCommandTextAsRelation()
-	{
-		var name = ColumnName;
-		var type = RelationColumnType;
-		var sql = $"{name} {type}";
-
-		return sql;
-	}
-}
-
-public enum SpecialColumn
-{
-	None,
-	CreateTimestamp,
-	UpdateTimestamp,
-	VersionNumber,
 }

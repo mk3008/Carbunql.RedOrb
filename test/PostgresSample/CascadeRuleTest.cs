@@ -50,8 +50,6 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Assert.Equal(loadedComment.Post.Title, newComment.Post.Title);
 		Assert.Equal(loadedComment.Post.Blog.BlogId, newComment.Post.Blog.BlogId);
 		Assert.Equal(loadedComment.Post.Blog.Url, newComment.Post.Blog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -82,8 +80,6 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Assert.NotEqual(loadedComment.Post.Title, newComment.Post.Title);
 		Assert.Equal(loadedComment.Post.Title, string.Empty);
 		Assert.Null(loadedComment.Post.Blog);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -118,8 +114,6 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 
 		Assert.NotEqual(loadedComment.Post.Blog.Url, newComment.Post.Blog.Url);
 		Assert.Equal(loadedComment.Post.Blog.Url, string.Empty);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -154,7 +148,5 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Assert.NotEqual(loadedComment.Post.Title, newComment.Post.Title);
 		Assert.Equal(loadedComment.Post.Title, string.Empty);
 		Assert.Null(loadedComment.Post.Blog);
-
-		trn.Commit();
 	}
 }

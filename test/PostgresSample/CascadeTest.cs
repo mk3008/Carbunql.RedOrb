@@ -43,8 +43,6 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Assert.NotNull(newPost.Blog.BlogId);
 		Assert.NotNull(newPost.PostId);
 		Assert.Equal(newBlog.BlogId, newPost.Blog.BlogId);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -63,7 +61,10 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedPost = cn.Load<Post>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			var def = ObjectRelationMapper.FindFirst<Post>();
+			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
+			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
 		}).First();
 
 		Assert.Equal(newPost.PostId, loadedPost.PostId);
@@ -71,8 +72,6 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Assert.Equal(newPost.Content, loadedPost.Content);
 		Assert.Equal(newPost.Blog.BlogId, loadedPost.Blog.BlogId);
 		Assert.Equal(newPost.Blog.Url, loadedPost.Blog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -94,7 +93,11 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedPost = cn.Load<Post>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			var def = ObjectRelationMapper.FindFirst<Post>();
+			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
+			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
+
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
 		}).First();
 
 		Assert.Equal(newPost.PostId, loadedPost.PostId);
@@ -102,8 +105,6 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Assert.Equal(newPost.Content, loadedPost.Content);
 		Assert.Equal(newPost.Blog.BlogId, loadedPost.Blog.BlogId);
 		Assert.Equal(newPost.Blog.Url, loadedPost.Blog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -124,12 +125,14 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedPost = cn.Load<Post>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			var def = ObjectRelationMapper.FindFirst<Post>();
+			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
+			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
+
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
 		}).FirstOrDefault();
 
 		Assert.Null(loadedPost);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -148,7 +151,10 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			var def = ObjectRelationMapper.FindFirst<Blog>();
+			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
+
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
 		}).First();
 
 		Assert.Empty(loadedBlog.Posts);
@@ -163,8 +169,6 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Assert.Equal(newPost.Content, loadedPost.Content);
 		Assert.Equal(newPost.Blog.BlogId, loadedPost.Blog.BlogId);
 		Assert.Equal(newPost.Blog.Url, loadedPost.Blog.Url);
-
-		trn.Commit();
 	}
 
 	[Fact]
@@ -183,13 +187,14 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			var def = ObjectRelationMapper.FindFirst<Blog>();
+			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
+
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
 		}).First();
 		cn.Fetch(loadedBlog, nameof(loadedBlog.Posts));
 
 		Assert.Equal(2, loadedBlog.Posts.Count);
 		Assert.Equal(loadedBlog.Posts[0].Blog, loadedBlog.Posts[1].Blog);
-
-		trn.Commit();
 	}
 }

@@ -34,7 +34,7 @@ public class DbTableDefinitionTest
 		var def = new DbTableDefinition
 		{
 			TableName = "test",
-			ColumnDefinitions = new()
+			ColumnContainers = new()
 			{
 				new DbColumnDefinition()
 				{
@@ -44,11 +44,13 @@ public class DbTableDefinitionTest
 				},
 				new DbColumnDefinition()
 				{
+					Identifer = "price",
 					ColumnName = "price",
 					ColumnType = "int8"
 				},
 				new DbColumnDefinition()
 				{
+					Identifer = "remarks",
 					ColumnName = "remarks",
 					ColumnType = "text",
 					IsNullable = true,
