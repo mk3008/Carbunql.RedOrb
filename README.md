@@ -207,6 +207,11 @@ where
     (d.blog_id) in (select v.blog_id from (values (:BlogId)) as v (blog_id));
 ```
 
+## Advanced usage
+
+Please refer to the wiki for advanced usage such as how to write a Model, Fetch, and CascadeRule.
+https://github.com/mk3008/RedOrb/wiki
+
 ## Referenced Libraries
 ### UTF8JSON / MIT License
 https://github.com/neuecc/Utf8Json/
