@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RedOrb;
+using RedOrb.Attributes;
 using Xunit.Abstractions;
 
 namespace PostgresSample;
