@@ -54,122 +54,16 @@ public static class DbTableDefinitionRepository
 {
 	public static DbTableDefinition<Blog> GetBlogDefinition()
 	{
-		return new DbTableDefinition<Blog>()
-		{
-			TableName = "blogs",
-			ColumnContainers =
-			{
-				new DbColumnDefinition  {
-					Identifer = nameof(Blog.BlogId),
-					ColumnName = "blog_id",
-					ColumnType= "serial8",
-					RelationColumnType = "bigint",
-					IsPrimaryKey= true,
-					IsAutoNumber = true
-				},
-				new DbColumnDefinition {
-					Identifer = nameof(Blog.Url),
-					ColumnName = "url",
-					ColumnType= "text"
-				},
-			},
-			ChildIdentifers = {
-				nameof(Blog.Posts)
-			},
-			Indexes =
-			{
-				new DbIndexDefinition {
-					Identifers = {
-						nameof(Blog.Url)
-					},
-					IsUnique = true
-				},
-			}
-		};
+		return DefinitionBuilder.Create<Blog>();
 	}
 
 	public static DbTableDefinition<Post> GetPostDefinition()
 	{
-		return new DbTableDefinition<Post>()
-		{
-			TableName = "posts",
-			ColumnContainers =
-			{
-				new DbColumnDefinition {
-					Identifer = nameof(Post.PostId),
-					ColumnName = "post_id",
-					ColumnType= "serial8",
-					RelationColumnType = "bigint",
-					IsPrimaryKey= true,
-					IsAutoNumber = true
-				},
-				new DbParentRelationDefinition
-				{
-					Identifer = nameof(Post.Blog),
-					IdentiferType= typeof(Blog),
-					//Not required if the columns to be mapped have the same name.
-					//Relations = new()
-					//{
-					//	new DbParentRelationColumnDefinition()
-					//	{
-					//		ColumnName = "blog_id",
-					//		ColumnType = "bigint",
-					//		ParentIdentifer = nameof(Post.Blog.BlogId),
-					//	}
-					//}
-				},
-				new DbColumnDefinition {
-					Identifer = nameof(Post.Title),
-					ColumnName = "title",
-					ColumnType= "text"
-				},
-				new DbColumnDefinition {
-					Identifer = nameof(Post.Content),
-					ColumnName = "content",
-					ColumnType = "text"
-				},
-			},
-			ChildIdentifers = {
-				nameof(Post.Comments)
-			}
-		};
+		return DefinitionBuilder.Create<Post>();
 	}
 
 	public static DbTableDefinition<Comment> GetCommentDefinition()
 	{
-		return new DbTableDefinition<Comment>()
-		{
-			TableName = "post_comments",
-			ColumnContainers =
-			{
-				new DbColumnDefinition {
-					Identifer = nameof(Comment.CommentId),
-					ColumnName = "comment_id",
-					ColumnType= "serial8",
-					RelationColumnType = "bigint",
-					IsPrimaryKey= true,
-					IsAutoNumber = true
-				},
-				new DbParentRelationDefinition {
-					Identifer = nameof(Comment.Post),
-					IdentiferType = typeof(Post),
-					//Required if the column to be mapped is an alias.
-					Relations = new()
-					{
-						new DbParentRelationColumnDefinition()
-						{
-							ColumnName = "owner_post_id",
-							ColumnType = "bigint",
-							ParentIdentifer = nameof(Comment.Post.PostId),
-						}
-					}
-				},
-				new DbColumnDefinition {
-					Identifer = nameof(Comment.CommentText),
-					ColumnName = "comment_text",
-					ColumnType= "text"
-				},
-			}
-		};
+		return DefinitionBuilder.Create<Comment>();
 	}
 }

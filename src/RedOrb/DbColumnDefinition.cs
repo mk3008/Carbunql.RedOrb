@@ -33,6 +33,9 @@ public class DbColumnDefinition : IDbColumnContainer
 
 	public IEnumerable<string> GetCreateTableCommandTexts()
 	{
+		if (string.IsNullOrEmpty(ColumnName)) throw new InvalidProgramException($"{nameof(ColumnName)} is empty string.)");
+		if (string.IsNullOrEmpty(ColumnType)) throw new InvalidProgramException($"{nameof(ColumnType)} is empty string.(column:{ColumnName})");
+
 		var name = ColumnName;
 		var type = ColumnType;
 		var sql = $"{name} {type}";
