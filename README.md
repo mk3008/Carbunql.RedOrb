@@ -66,8 +66,12 @@ public class Blog
 ### General
 - Connection class generation is out of scope
 
-### When reading
+### When loading
 - Column filtering is not possible.
+
+### When saving
+- If the primary key value is zero, it is considered to be added. (Primary key value cannot be registered with zero)
+
 
 ## Getting started
 
