@@ -9,24 +9,72 @@ Simple, Intuitive, ORM
 
 ORM for people who simply want to access a database.
 
-# Demo
+## Demo
 Although a configuration file is required, CRUD processing is very simple to write.
 
-## Model
 ```cs
+using RedOrb;
 using RedOrb.Attributes;
+using System.Data;
+
+// configuration
+ObjectRelationMapper.PlaceholderIdentifer = ":";
+ObjectRelationMapper.AddTypeHandler(DefinitionBuilder.Create<Blog>());
+
+// database connection processing is omitted as it is out of scope.
+using IDbConnection cn = null!;
+
+// create table
+cn.CreateTableOrDefault<Blog>();
+
+// insert
+var c = new Blog { Url = "test" };
+cn.Save(c);
+
+// primary key search
+var blog = cn.Load(new Blog { BlogId = 1 });
+
 
 [DbTable("blogs")]
 public class Blog
 {
-    [DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
-    public int BlogId { get; set; }
-    [DbColumn("text")]
-    public string Url { get; set; } = string.Empty;
+	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
+	public int BlogId { get; set; }
+	[DbColumn("text")]
+	public string Url { get; set; } = string.Empty;
 }
 ```
 
-## Configuration
+## Features
+### General
+- Connection classes are not hidden
+- Supports SQL logging
+- DBMS independent
+- Supports sequence keys
+- Supports composite keys
+
+### When reading
+- All tables with a 1:1 or 1:0..1 relationship are joined and read (default)
+- You can set whether to join tables.
+- You can use primary key search and unique key search.
+- You can also specify any search conditions.
+
+### When saving
+- All tables with 1 to 0..N relationships are saved.
+
+## Constraints
+### General
+- Connection class generation is out of scope
+
+### When reading
+- Column filtering is not possible.
+
+## Getting started
+
+> PM> NuGet\Install-Package [RedOrb](https://www.nuget.org/packages/RedOrb/)
+
+
+### Configuration
 Register the type mapping only once before using RedOrb.
 
 ```cs
@@ -53,7 +101,7 @@ create table if not exists blogs (
 )
 ```
 
-## Create(Insert)
+### Create(Insert)
 ```cs
 using RedOrb;
 
@@ -81,7 +129,7 @@ FROM
 returning blog_id;
 ```
 
-## Read(Select)
+### Read(Select)
 ```cs
 using RedOrb;
 
@@ -102,7 +150,7 @@ WHERE
     t0.blog_id = :key0
 ```
 
-## Update
+### Update
 ```cs
 using RedOrb;
 
@@ -138,7 +186,7 @@ WHERE
     d.blog_id = q.blog_id;
 ```
 
-## Delete
+### Delete
 ```cs
 using RedOrb;
 
@@ -155,28 +203,53 @@ where
     (d.blog_id) in (select v.blog_id from (values (:BlogId)) as v (blog_id));
 ```
 
-# Features
-## General
-- Connection classes are not hidden
-- Supports SQL logging
-- DBMS independent
-- Supports sequence keys
-- Supports composite keys
+## Referenced Libraries
+### UTF8JSON / MIT License
+https://github.com/neuecc/Utf8Json/
 
-## When reading
-- All tables with a 1:1 or 1:0..1 relationship are joined and read (default)
-- You can set whether to join tables.
-- You can use primary key search and unique key search.
-- You can also specify any search conditions.
+https://github.com/neuecc/Utf8Json/blob/master/LICENSE
 
-## When saving
-- All tables with 1 to 0..N relationships are saved.
+Copyright (c) 2017 Yoshifumi Kawai
 
-# Constraints
-## General
-- When using sequence keys, please make the type Nullable
-- Connection class generation is out of scope
-- Requires creation of table definition class
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-## When reading
-- Column filtering is not possible.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### Carbunql / MIT License
+https://github.com/mk3008/Carbunql
+
+https://github.com/mk3008/Carbunql/blob/main/LICENSE
+
+Copyright (c) 2022 MSugiura
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
