@@ -32,6 +32,13 @@ public static class DefinitionBuilder
 				def.ColumnContainers.Add(relation.ToDefinition(prop));
 				continue;
 			}
+			else if (prop.GetCustomAttributes<DbParentRelationColumnAttribute>().Any())
+			{
+				// Pattern omitting DbParentRelationAttribute
+				var r = DbParentRelationAttribute.CreateDefault();
+				def.ColumnContainers.Add(r.ToDefinition(prop));
+				continue;
+			}
 		}
 
 		//add Child

@@ -28,4 +28,14 @@ public class DbParentRelationAttribute : Attribute
 
 		return def;
 	}
+
+	public static DbParentRelationAttribute CreateDefault()
+	{
+		var attr = new DbParentRelationAttribute()
+		{
+			IsPrimaryKey = false,
+			IsUniqueKey = false,
+		};
+		return attr;
+	}
 }

@@ -29,10 +29,10 @@ public class DbTableAttribute : Attribute
 
 	public static DbTableAttribute CreateDefault<T>()
 	{
-		var d = new DbTableAttribute()
+		var attr = new DbTableAttribute()
 		{
 			TableName = typeof(T).Name.ToSnakeCase(),
 		};
-		return d;
+		return attr;
 	}
 }

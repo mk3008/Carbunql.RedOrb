@@ -28,13 +28,13 @@ public partial class Post
 {
 	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
 	public int? PostId { get; set; }
-	[DbParentRelation]
 	[DbParentRelationColumn("bigint", nameof(Post.Blog.BlogId))]
 	public Blog Blog { get; set; } = null!;
 	[DbColumn("text")]
 	public string Title { get; set; } = string.Empty;
 	[DbColumn("text")]
 	public string Content { get; set; } = string.Empty;
+
 	[DbChildren]
 	public IList<Comment> Comments { get; }
 }
@@ -46,7 +46,6 @@ public class Comment
 	public int? CommentId { get; set; }
 	[DbColumn("text")]
 	public string CommentText { get; set; } = string.Empty;
-	[DbParentRelation]
 	[DbParentRelationColumn("owner_post_id", "bigint", nameof(Comment.Post.PostId))]
 	public Post Post { get; set; } = null!;
 }
