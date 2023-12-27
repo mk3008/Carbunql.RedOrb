@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace RedOrb;
+﻿namespace RedOrb;
 
 public class DbTableDefinition : IDbTableDefinition
 {

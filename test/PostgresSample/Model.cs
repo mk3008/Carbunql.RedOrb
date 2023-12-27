@@ -1,6 +1,6 @@
-﻿using RedOrb;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
+﻿using PropertyBind;
+using RedOrb;
+using RedOrb.Attributes;
 
 namespace PostgresSample;
 
@@ -8,60 +8,46 @@ namespace PostgresSample;
  * https://learn.microsoft.com/ja-jp/ef/core/get-started/overview/first-app?tabs=netcore-cli
  */
 
-public class Blog
+[GeneratePropertyBind(nameof(Posts), nameof(Post.Blog))]
+[DbTable("blogs")]
+[DbIndex(true, nameof(Url))]
+public partial class Blog
 {
+	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
 	public int? BlogId { get; set; }
+	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
-	public ObservableCollection<Post> Posts { get; } = new();
 
-	public Blog()
-	{
-		Posts.CollectionChanged += Posts_CollectionChanged;
-	}
-
-	private void Posts_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-	{
-		if (e.Action == NotifyCollectionChangedAction.Add)
-		{
-			if (e.NewItems == null) return;
-			foreach (Post item in e.NewItems)
-			{
-				item.Blog = this;
-			}
-		}
-	}
+	[DbChildren]
+	public IList<Post> Posts { get; }
 }
 
-public class Post
+[GeneratePropertyBind(nameof(Comments), nameof(Comment.Post))]
+[DbTable("posts")]
+public partial class Post
 {
+	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
 	public int? PostId { get; set; }
-	public string Title { get; set; } = string.Empty;
-	public string Content { get; set; } = string.Empty;
+	[DbParentRelation]
+	[DbParentRelationColumn("bigint", nameof(Post.Blog.BlogId))]
 	public Blog Blog { get; set; } = null!;
-	public ObservableCollection<Comment> Comments { get; } = new();
-
-	public Post()
-	{
-		Comments.CollectionChanged += Posts_CollectionChanged;
-	}
-
-	private void Posts_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-	{
-		if (e.Action == NotifyCollectionChangedAction.Add)
-		{
-			if (e.NewItems == null) return;
-			foreach (Comment item in e.NewItems)
-			{
-				item.Post = this;
-			}
-		}
-	}
+	[DbColumn("text")]
+	public string Title { get; set; } = string.Empty;
+	[DbColumn("text")]
+	public string Content { get; set; } = string.Empty;
+	[DbChildren]
+	public IList<Comment> Comments { get; }
 }
 
+[DbTable("comments")]
 public class Comment
 {
+	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
 	public int? CommentId { get; set; }
+	[DbColumn("text")]
 	public string CommentText { get; set; } = string.Empty;
+	[DbParentRelation]
+	[DbParentRelationColumn("owner_post_id", "bigint", nameof(Comment.Post.PostId))]
 	public Post Post { get; set; } = null!;
 }
 
