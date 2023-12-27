@@ -11,13 +11,30 @@ ORM for people who simply want to access a database.
 
 # Demo
 Although a configuration file is required, CRUD processing is very simple to write.
+
 ## Model
 ```cs
+using RedOrb.Attributes;
+
+[DbTable("blogs")]
 public class Blog
 {
-    public int? BlogId { get; set; }
+    [DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
+    public int BlogId { get; set; }
+    [DbColumn("text")]
     public string Url { get; set; } = string.Empty;
 }
+```
+
+## Configuration
+Register the type mapping only once before using RedOrb.
+
+```cs
+using RedOrb;
+using RedOrb.Attributes;
+
+ObjectRelationMapper.PlaceholderIdentifer = ":";
+ObjectRelationMapper.AddTypeHandler(DefinitionBuilder.Create<Blog>());
 ```
 
 ## Create Table
@@ -25,26 +42,64 @@ public class Blog
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-
 cn.CreateTableOrDefault<Blog>();
 ```
 
-## Create
-```cs
-using RedOrb;
-
-using IDbConnection cn = SomethingMethod();
-
-var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
-cn.Save(newBlog);
+```sql
+create table if not exists blogs (
+    blog_id serial8 not null, 
+    url text not null, 
+    primary key(blog_id)
+)
 ```
-## Read
+
+## Create(Insert)
 ```cs
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
+var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet" };
+Assert.Equal(0, newBlog.BlodId);
+cn.Save(newBlog);
+Assert.NotEqual(0, newBlog.BlodId);
+```
 
+```sql
+/*
+  Url = '"http://blogs.msdn.com/adonet'
+*/
+insert into blogs (url)
+SELECT
+    v.url
+FROM
+    (
+        VALUES
+            (:Url)
+    ) AS v (
+        url
+    )
+returning blog_id;
+```
+
+## Read(Select)
+```cs
+using RedOrb;
+
+using IDbConnection cn = SomethingMethod();
 var blog = cn.Load(new Blog() { BlodId = 1 });
+```
+
+```sql
+/*
+  key0 = 1
+*/
+SELECT
+    t0.blog_id AS t0BlogId,
+    t0.url AS t0Url
+FROM
+    blogs AS t0
+WHERE
+    t0.blog_id = :key0
 ```
 
 ## Update
@@ -52,12 +107,35 @@ var blog = cn.Load(new Blog() { BlodId = 1 });
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-
 var blog = cn.Load(new Blog() { BlodId = 1 });
-
 blog.Url = "https://devblogs.microsoft.com/dotnet";
-
 cn.Save(blog);
+```
+
+```sql
+/*
+  BlogId = 1
+  Url = 'https://devblogs.microsoft.com/dotnet'
+*/
+UPDATE
+    blogs AS d
+SET
+    url = q.url
+FROM
+    (
+        SELECT
+            v.blog_id,
+            v.url
+        FROM
+            (
+                VALUES
+                    (:BlogId, :Url)
+            ) AS v (
+                blog_id, url
+            )
+    ) AS q
+WHERE
+    d.blog_id = q.blog_id;
 ```
 
 ## Delete
@@ -65,31 +143,16 @@ cn.Save(blog);
 using RedOrb;
 
 using IDbConnection cn = SomethingMethod();
-
 cn.Delete(new Blog() { BlodId = 1 });
 ```
 
-## Configuration
-```cs
-using RedOrb;
-
-ObjectRelationMapper.PlaceholderIdentifer = ":";
-
-var def = new DbTableDefinition<Blog>()
-{
-    TableName = "blogs",
-    ColumnDefinitions =
-    {
-        new () {Identifer = nameof(Blog.BlogId), ColumnName = "blog_id", ColumnType= "serial8", RelationColumnType = "bigint", IsPrimaryKey= true, IsAutoNumber = true},
-        new () {Identifer = nameof(Blog.Url), ColumnName = "url", ColumnType= "text"},
-    },
-    Indexes =
-    {
-        new() {Identifers = { nameof(Blog.Url) }, IsUnique = true},
-    }
-};
-
-ObjectRelationMapper.AddTypeHandler(def);
+```sql
+/*
+  BlogId = 1
+*/
+delete from blogs as d
+where
+    (d.blog_id) in (select v.blog_id from (values (:BlogId)) as v (blog_id));
 ```
 
 # Features
