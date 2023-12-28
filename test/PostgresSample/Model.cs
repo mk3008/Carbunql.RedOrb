@@ -18,8 +18,10 @@ public partial class Blog
 	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
 
-	[DbChildren]
+	[DbChildren(nameof(DeletedPosts))]
 	public IList<Post> Posts { get; }
+
+	public IList<Post> DeletedPosts { get; }
 }
 
 [GeneratePropertyBind(nameof(Comments), nameof(Comment.Post))]
@@ -35,8 +37,10 @@ public partial class Post
 	[DbColumn("text")]
 	public string Content { get; set; } = string.Empty;
 
-	[DbChildren]
+	[DbChildren(nameof(DeletedComments))]
 	public IList<Comment> Comments { get; }
+
+	public IList<Comment> DeletedComments { get; }
 }
 
 [DbTable("comments")]

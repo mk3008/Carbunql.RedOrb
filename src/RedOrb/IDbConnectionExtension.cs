@@ -94,7 +94,7 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer);
+			var children = GetChildren(instance, idnetifer.CurrentName);
 			foreach (var child in children.Items)
 			{
 				var insertMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Insert))!.MakeGenericMethod(children.GenericType);
@@ -110,11 +110,20 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer);
+			var children = GetChildren(instance, idnetifer.CurrentName);
 			foreach (var child in children.Items)
 			{
 				var saveMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Save))!.MakeGenericMethod(children.GenericType);
 				saveMethod.Invoke(null, new[] { connection, child });
+			}
+		}
+		foreach (var idnetifer in def.ChildIdentifers)
+		{
+			var children = GetChildren(instance, idnetifer.RemovedName);
+			foreach (var child in children.Items)
+			{
+				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Delete))!.MakeGenericMethod(children.GenericType);
+				deleteMethod.Invoke(null, new[] { connection, child });
 			}
 		}
 	}
@@ -197,8 +206,12 @@ public static class IDbConnectionExtension
 		connection.DeleteByDefinition(instance, def);
 	}
 
-	public static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
-	{
+	internal static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
+	{ 
+		var seq = def.GetPrimaryKeys().First();
+		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
+		if (id.IsEmptyId()) return;
+
 		var q = def.ToDeleteQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
 
 		var executor = new QueryExecutor()
@@ -211,7 +224,7 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer);
+			var children = GetChildren(instance, idnetifer.CurrentName);
 			var childdef = ObjectRelationMapper.FindFirst(children.GenericType);
 			foreach (var child in children.Items)
 			{

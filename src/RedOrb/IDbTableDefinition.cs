@@ -18,7 +18,7 @@ public interface IDbTableDefinition : IDbTable
 
 	IEnumerable<DbParentRelationDefinition> ParentRelationDefinitions { get; }
 
-	List<string> ChildIdentifers { get; }
+	List<ChildrenIdentifer> ChildIdentifers { get; }
 }
 
 public static class IDbTableDefinitionExtention
