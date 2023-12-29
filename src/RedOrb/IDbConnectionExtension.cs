@@ -94,7 +94,7 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer.CurrentName);
+			var children = GetChildren(instance, idnetifer);
 			foreach (var child in children.Items)
 			{
 				var insertMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Insert))!.MakeGenericMethod(children.GenericType);
@@ -110,7 +110,7 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer.CurrentName);
+			var children = GetChildren(instance, idnetifer);
 			foreach (var child in children.Items)
 			{
 				var saveMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Save))!.MakeGenericMethod(children.GenericType);
@@ -119,11 +119,12 @@ public static class IDbConnectionExtension
 		}
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer.RemovedName);
+			var children = GetRemovedChildren(instance, idnetifer);
+			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
 			foreach (var child in children.Items)
 			{
-				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(Delete))!.MakeGenericMethod(children.GenericType);
-				deleteMethod.Invoke(null, new[] { connection, child });
+				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(DeleteByDefinition))!.MakeGenericMethod(children.GenericType);
+				deleteMethod.Invoke(null, new[] { connection, child, childrendef });
 			}
 		}
 	}
@@ -206,10 +207,10 @@ public static class IDbConnectionExtension
 		connection.DeleteByDefinition(instance, def);
 	}
 
-	internal static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
-	{ 
-		var seq = def.GetPrimaryKeys().First();
-		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
+	public static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
+	{
+		var keys = def.GetPrimaryKeys().First();
+		var id = keys.Identifer.ToPropertyInfo<T>().GetValue(instance);
 		if (id.IsEmptyId()) return;
 
 		var q = def.ToDeleteQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
@@ -224,12 +225,22 @@ public static class IDbConnectionExtension
 
 		foreach (var idnetifer in def.ChildIdentifers)
 		{
-			var children = GetChildren(instance, idnetifer.CurrentName);
-			var childdef = ObjectRelationMapper.FindFirst(children.GenericType);
+			var children = GetChildren(instance, idnetifer);
+			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
 			foreach (var child in children.Items)
 			{
 				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(DeleteByDefinition))!.MakeGenericMethod(children.GenericType);
-				deleteMethod.Invoke(null, new[] { connection, child, childdef });
+				deleteMethod.Invoke(null, new[] { connection, child, childrendef });
+			}
+		}
+		foreach (var idnetifer in def.ChildIdentifers)
+		{
+			var children = GetRemovedChildren(instance, idnetifer);
+			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
+			foreach (var child in children.Items)
+			{
+				var deleteMethod = typeof(IDbConnectionExtension).GetMethod(nameof(DeleteByDefinition))!.MakeGenericMethod(children.GenericType);
+				deleteMethod.Invoke(null, new[] { connection, child, childrendef });
 			}
 		}
 	}
@@ -364,6 +375,26 @@ public static class IDbConnectionExtension
 
 		var children = (IList)prop.GetValue(instance)!;
 
+		var targetType = typeof(IDirtyCheckableCollection<>).MakeGenericType(collectionType);
+		if (targetType.IsAssignableFrom(children.GetType()))
+		{
+
+		}
+
 		return new Children() { GenericType = genericType, Items = children };
+	}
+
+	private static Children GetRemovedChildren<T>(T instance, string idnetifer)
+	{
+		var prop = idnetifer.ToPropertyInfo<T>();
+		var collectionType = prop.PropertyType;
+
+		if (!collectionType.IsGenericType) throw new NotSupportedException();
+
+		Type genericType = collectionType.GenericTypeArguments[0];
+
+		var children = (IDirtyCheckableCollection)prop.GetValue(instance)!;
+
+		return new Children() { GenericType = genericType, Items = children.RemovedCollection };
 	}
 }

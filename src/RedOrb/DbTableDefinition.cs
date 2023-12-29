@@ -37,7 +37,7 @@ public class DbTableDefinition : IDbTableDefinition
 		}
 	}
 
-	public List<ChildrenIdentifer> ChildIdentifers { get; init; } = new();
+	public List<string> ChildIdentifers { get; init; } = new();
 
 	public virtual Type Type { get; } = null!;
 

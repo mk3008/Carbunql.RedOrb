@@ -46,11 +46,7 @@ public static class DefinitionBuilder
 		{
 			var children = prop.GetCustomAttribute<DbChildrenAttribute>();
 			if (children == null) continue;
-			if (string.IsNullOrEmpty(children.RemovedItemsIdentifer)) throw new InvalidProgramException(); ;
-			def.ChildIdentifers.Add(new(){
-				CurrentName = prop.Name,
-				RemovedName = children.RemovedItemsIdentifer
-			});
+			def.ChildIdentifers.Add(prop.Name);
 		}
 
 		return def;
