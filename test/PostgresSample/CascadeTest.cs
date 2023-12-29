@@ -136,6 +136,66 @@ public class CascadeTest : IClassFixture<PostgresDB>
 	}
 
 	[Fact]
+	public void RemoveTest()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
+		using var trn = cn.BeginTransaction();
+
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/DeleteTest" };
+		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
+		newBlog.Posts.Add(newPost);
+		cn.Save(newBlog);
+
+		//reload
+		var blog = cn.Load(newBlog);
+		cn.Fetch(blog, nameof(Blog.Posts));
+
+		Assert.NotEqual(blog, newBlog);
+		Assert.Single(blog.Posts);
+
+		//remove and save
+		blog.Posts.RemoveAt(0);// .Clear();
+		cn.Save(blog);
+
+		//reload
+		blog = cn.Load(blog);
+		cn.Fetch(blog, nameof(Blog.Posts));
+
+		Assert.Empty(blog.Posts);
+	}
+
+	[Fact]
+	public void ClearTest()
+	{
+		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);
+		using var trn = cn.BeginTransaction();
+
+		Logger.LogInformation("Inserting a new blog");
+		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/CascadeTest/DeleteTest" };
+		newBlog.Posts.Add(new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" });
+		newBlog.Posts.Add(new Post { Title = "Hello Carbunql!", Content = "I wrote an app using RedOrb!" });
+		cn.Save(newBlog);
+
+		//reload
+		var blog = cn.Load(newBlog);
+		cn.Fetch(blog, nameof(Blog.Posts));
+
+		Assert.NotEqual(blog, newBlog);
+		Assert.Equal(2, blog.Posts.Count);
+
+		//clear and save
+		blog.Posts.Clear();
+		cn.Save(blog);
+
+		//reload
+		blog = cn.Load(blog);
+		cn.Fetch(blog, nameof(Blog.Posts));
+
+		Assert.Empty(blog.Posts);
+	}
+
+	[Fact]
 	public void FetchTest()
 	{
 		using var cn = PostgresDB.ConnectionOpenAsNew(Logger);

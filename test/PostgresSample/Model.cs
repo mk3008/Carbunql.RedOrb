@@ -1,6 +1,9 @@
-﻿using PropertyBind;
+﻿using Docker.DotNet.Models;
+using PropertyBind;
 using RedOrb;
 using RedOrb.Attributes;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace PostgresSample;
 
@@ -8,7 +11,7 @@ namespace PostgresSample;
  * https://learn.microsoft.com/ja-jp/ef/core/get-started/overview/first-app?tabs=netcore-cli
  */
 
-[GeneratePropertyBind(nameof(Posts), nameof(Post.Blog))]
+//[GeneratePropertyBind(nameof(Posts), nameof(Post.Blog))]
 [DbTable("blogs")]
 [DbIndex(true, nameof(Url))]
 public partial class Blog
@@ -19,10 +22,34 @@ public partial class Blog
 	public string Url { get; set; } = string.Empty;
 
 	[DbChildren]
-	public IList<Post> Posts { get; }
+	public DirtyCheckableCollection<Post> Posts { get; }
+
+	private DirtyCheckableCollection<Post> __CreatePosts()
+	{
+		var lst = new DirtyCheckableCollection<Post>();
+		lst.CollectionChanged += __Posts_CollectionChanged;
+		return lst;
+	}
+
+	private void __Posts_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action == NotifyCollectionChangedAction.Add)
+		{
+			if (e.NewItems == null) return;
+			foreach (Post item in e.NewItems)
+			{
+				item.Blog = this;
+			}
+		}
+	}
+
+	public Blog()
+	{
+		Posts = __CreatePosts();
+	}
 }
 
-[GeneratePropertyBind(nameof(Comments), nameof(Comment.Post))]
+//[GeneratePropertyBind(nameof(Comments), nameof(Comment.Post))]
 [DbTable("posts")]
 public partial class Post
 {
@@ -36,7 +63,31 @@ public partial class Post
 	public string Content { get; set; } = string.Empty;
 
 	[DbChildren]
-	public IList<Comment> Comments { get; }
+	public DirtyCheckableCollection<Comment> Comments { get; }
+
+	private DirtyCheckableCollection<Comment> __CreateComments()
+	{
+		var lst = new DirtyCheckableCollection<Comment>();
+		lst.CollectionChanged += __Comments_CollectionChanged;
+		return lst;
+	}
+
+	private void __Comments_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action == NotifyCollectionChangedAction.Add)
+		{
+			if (e.NewItems == null) return;
+			foreach (Comment item in e.NewItems)
+			{
+				item.Post = this;
+			}
+		}
+	}
+
+	public Post()
+	{
+		Comments = __CreateComments();
+	}
 }
 
 [DbTable("comments")]
