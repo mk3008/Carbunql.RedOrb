@@ -24,6 +24,9 @@ public class DefinitionBuilderTest
 create table if not exists blogs (
     blog_id serial8 not null, 
     url text not null, 
+    created_at timestamp not null default clock_timestamp(), 
+	updated_at timestamp not null default clock_timestamp(), 
+	version numeric not null, 
     primary key(blog_id)
 )
 """;

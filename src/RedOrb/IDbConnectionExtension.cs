@@ -150,6 +150,13 @@ public static class IDbConnectionExtension
 		var prop = iq.Sequence.Identifer.ToPropertyInfo<T>();
 
 		prop.Write(instance, newId);
+
+		//initialize version
+		foreach (var item in def.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
+		{
+			var p = item.Identifer.ToPropertyInfo<T>();
+			p.Write(instance, 1);
+		}
 	}
 
 	public static void UpdateByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
@@ -188,6 +195,15 @@ public static class IDbConnectionExtension
 		else if (val != 1)
 		{
 			throw new InvalidProgramException($"You are trying to update multiple items. The primary key definition is incorrect.(type:{def.Type.FullName})");
+		}
+
+		//increment version
+		foreach (var item in def.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
+		{
+			var p = item.Identifer.ToPropertyInfo<T>();
+			var v = p.GetValue(instance, null);
+			var version = long.Parse(v!.ToString()!) + 1;
+			p.Write(instance, version);
 		}
 	}
 
