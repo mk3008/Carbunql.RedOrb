@@ -2,7 +2,7 @@
 
 public class DbTableDefinition : IDbTableDefinition
 {
-	public string SchemaName { get; init; } = string.Empty;
+	public string SchemaName { get; set; } = string.Empty;
 
 	public required string TableName { get; init; }
 
