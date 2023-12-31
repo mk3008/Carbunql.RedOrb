@@ -8,6 +8,8 @@ public static class ObjectRelationMapper
 
 	public static int Timeout { get; set; } = 30;
 
+	public static Func<DbTableDefinition, DbTableDefinition>? Converter { get; set; }
+
 	private static ConcurrentDictionary<Type, DbTableDefinition> Map { get; set; } = new();
 
 	public static void AddTypeHandler<T>(DbTableDefinition<T> def)
@@ -19,7 +21,14 @@ public static class ObjectRelationMapper
 			throw new ArgumentException($"Type '{type.FullName}' is already registered with ObjectRelationMapper.");
 		}
 
-		Map.GetOrAdd(type, def);
+		if (Converter != null)
+		{
+			Map.GetOrAdd(type, Converter(def));
+		}
+		else
+		{
+			Map.GetOrAdd(type, def);
+		}
 	}
 
 	public static DbTableDefinition<T> FindFirst<T>()
