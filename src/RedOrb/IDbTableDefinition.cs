@@ -154,6 +154,23 @@ public static class IDbTableDefinitionExtention
 			cols.Add(item.ColumnName);
 		}
 
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.CreateTimestamp || x.SpecialColumn == SpecialColumn.UpdateTimestamp))
+		{
+			if (string.IsNullOrEmpty(item.Identifer)) continue;
+			if (item.IsAutoNumber) continue;
+
+			var command = !string.IsNullOrEmpty(item.DefaultValue) ? item.DefaultValue : "current_timestamp";
+
+			row.Add(command);
+			cols.Add(item.ColumnName);
+		}
+
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
+		{
+			row.Add("1");
+			cols.Add(item.ColumnName);
+		}
+
 		foreach (var parent in source.ParentRelationDefinitions)
 		{
 			var parentProp = parent.Identifer.ToPropertyInfo<T>();
@@ -196,7 +213,7 @@ public static class IDbTableDefinitionExtention
 		var row = new ValueCollection();
 		var cols = new List<string>();
 
-		foreach (var item in source.ColumnDefinitions)
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.None || x.SpecialColumn == SpecialColumn.ParentRelation))
 		{
 			if (string.IsNullOrEmpty(item.Identifer)) continue;
 
@@ -207,8 +224,36 @@ public static class IDbTableDefinitionExtention
 			cols.Add(item.ColumnName);
 		}
 
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.UpdateTimestamp))
+		{
+			var command = !string.IsNullOrEmpty(item.DefaultValue) ? item.DefaultValue : "current_timestamp";
+
+			row.Add(command);
+			cols.Add(item.ColumnName);
+		}
+
+		// version increment
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
+		{
+			var prop = item.Identifer.ToPropertyInfo<T>();
+			var pv = prop.ToParameterValue(instance, placeholderIdentifer);
+			pv.AddOperatableValue("+", "1");
+			row.Add(pv);
+			cols.Add(item.ColumnName);
+		}
+
 		var vq = new ValuesQuery(new List<ValueCollection>() { row });
-		return vq.ToSelectQuery(cols).ToUpdateQuery(source.GetTableFullName(), pkeys.Select(x => x.ColumnName));
+		var uq = vq.ToSelectQuery(cols).ToUpdateQuery(source.GetTableFullName(), pkeys.Select(x => x.ColumnName));
+
+		// version check
+		foreach (var item in source.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
+		{
+			var prop = item.Identifer.ToPropertyInfo<T>();
+			var pv = prop.ToParameterValue(instance, placeholderIdentifer);
+			uq.WhereClause!.Condition.And(uq.UpdateClause!.Table.Alias, item.ColumnName).Equal(pv);
+		}
+
+		return uq;
 	}
 
 	public static DeleteQuery ToDeleteQuery<T>(this IDbTableDefinition source, T instance, string placeholderIdentifer)

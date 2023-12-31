@@ -17,6 +17,12 @@ public partial class Blog
 	public int? BlogId { get; set; }
 	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
+	[DbColumn("timestamp", SpecialColumn = SpecialColumn.CreateTimestamp, DefaultValue = "clock_timestamp()")]
+	public DateTime CreatedAt { get; set; }
+	[DbColumn("timestamp", SpecialColumn = SpecialColumn.UpdateTimestamp, DefaultValue = "clock_timestamp()")]
+	public DateTime UpdatedAt { get; set; }
+	[DbColumn("numeric", SpecialColumn = SpecialColumn.VersionNumber)]
+	public long Version { get; set; }
 
 	[DbChildren]
 	public DirtyCheckableCollection<Post> Posts { get; }

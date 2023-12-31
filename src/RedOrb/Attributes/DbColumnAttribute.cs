@@ -26,6 +26,8 @@ public class DbColumnAttribute : Attribute
 
 	public string Comment { get; set; } = string.Empty;
 
+	public string TimestampCommand { get; set; } = string.Empty;
+
 	public SpecialColumn SpecialColumn { get; set; } = SpecialColumn.None;
 
 	public DbColumnDefinition ToDefinition(PropertyInfo prop)
@@ -42,7 +44,7 @@ public class DbColumnAttribute : Attribute
 			IsAutoNumber = IsAutoNumber,
 			IsPrimaryKey = IsPrimaryKey,
 			IsUniqueKey = IsUniqueKey,
-			SpecialColumn = SpecialColumn
+			SpecialColumn = SpecialColumn,
 		};
 		return c;
 	}

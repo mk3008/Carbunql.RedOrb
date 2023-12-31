@@ -102,10 +102,17 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		// Create
 		Logger.LogInformation("Inserting a new blog");
 		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/UpdateTest" };
+
+		Assert.Equal(0, newBlog.Version);
+
 		cn.Save(newBlog);
+
+		Assert.Equal(1, newBlog.Version);
 
 		newBlog.Url = "https://devblogs.microsoft.com/dotnet/DefaultTest/UpdateTest";
 		cn.Save(newBlog);
+
+		Assert.Equal(2, newBlog.Version);
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
@@ -116,6 +123,8 @@ public class DefaultTest : IClassFixture<PostgresDB>
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
+		Assert.Equal(newBlog.Version, loadedBlog.Version);
+		Assert.NotEqual(loadedBlog.CreatedAt, loadedBlog.UpdatedAt);
 	}
 
 	[Fact]
