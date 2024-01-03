@@ -41,7 +41,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedComment = cn.Load<Comment>(x =>
 		{
-			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId!.Value));
+			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId));
 		}).First();
 
 		Assert.Equal(loadedComment.CommentId, newComment.CommentId);
@@ -70,7 +70,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedComment = cn.Load<Comment>(x =>
 		{
-			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId!.Value));
+			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId));
 		}, rule: new NoCascadeReadRule()).First();
 
 		Assert.Equal(loadedComment.CommentId, newComment.CommentId);
@@ -103,7 +103,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedComment = cn.Load<Comment>(x =>
 		{
-			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId!.Value));
+			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId));
 		}, rule).First();
 
 		Assert.Equal(loadedComment.CommentId, newComment.CommentId);
@@ -138,7 +138,7 @@ public class CascadeRuleTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedComment = cn.Load<Comment>(x =>
 		{
-			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId!.Value));
+			x.Where(x.FromClause!, "comment_id").Equal(x.AddParameter(":id", newComment.CommentId));
 		}, rule).First();
 
 		Assert.Equal(loadedComment.CommentId, newComment.CommentId);

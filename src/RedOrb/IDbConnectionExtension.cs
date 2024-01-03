@@ -265,7 +265,7 @@ public static class IDbConnectionExtension
 	{
 		var pkeymaps = GetPrimaryKeyValueMaps(instance);
 
-		if (!pkeymaps.Where(x => x.Value == null).Any())
+		if (!pkeymaps.Where(x => x.IsEmpty()).Any())
 		{
 			return connection.Fetch<T>(pkeymaps, rule);
 		}
