@@ -96,8 +96,8 @@ public class LoadTest : IClassFixture<PostgresDB>
 		{
 			// Read
 			Logger.LogInformation("Querying for a blog");
-			var loadedBlog = cn.Load(new Blog() { BlogId = 0 });
+			var loadedBlog = cn.Load(new Blog() { BlogId = -1 });
 		});
-		Assert.Equal("No records found.(BlogId=0)", ex.Message);
+		Assert.Equal("No records found.(BlogId=-1)", ex.Message);
 	}
 }

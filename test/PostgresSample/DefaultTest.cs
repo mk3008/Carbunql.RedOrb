@@ -31,9 +31,9 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Inserting a new blog");
 		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/DefaultTest/CreateTest" };
 
-		Assert.Null(newBlog.BlogId);
+		Assert.Equal(0, newBlog.BlogId);
 		cn.Save(newBlog);
-		Assert.NotNull(newBlog.BlogId);
+		Assert.NotEqual(0, newBlog.BlogId);
 	}
 
 	[Fact]
@@ -86,7 +86,7 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
@@ -118,7 +118,7 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
@@ -144,7 +144,7 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		Logger.LogInformation("Querying for a blog");
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
-			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			x.Where(x.FromClause!, "blog_id").Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).FirstOrDefault();
 
 		Assert.Null(loadedBlog);

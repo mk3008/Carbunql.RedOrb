@@ -35,13 +35,13 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		var newPost = new Post { Title = "Hello Carbunql", Content = "I wrote an app using RedOrb!" };
 		newBlog.Posts.Add(newPost);
 
-		Assert.Null(newBlog.BlogId);
-		Assert.Null(newPost.Blog.BlogId);
-		Assert.Null(newPost.PostId);
+		Assert.Equal(0, newBlog.BlogId);
+		Assert.Equal(0, newPost.Blog.BlogId);
+		Assert.Equal(0, newPost.PostId);
 		cn.Save(newBlog);
-		Assert.NotNull(newBlog.BlogId);
-		Assert.NotNull(newPost.Blog.BlogId);
-		Assert.NotNull(newPost.PostId);
+		Assert.NotEqual(0, newBlog.BlogId);
+		Assert.NotEqual(0, newPost.Blog.BlogId);
+		Assert.NotEqual(0, newPost.PostId);
 		Assert.Equal(newBlog.BlogId, newPost.Blog.BlogId);
 	}
 
@@ -64,7 +64,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 			var def = ObjectRelationMapper.FindFirst<Post>();
 			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
 			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
-			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId));
 		}).First();
 
 		Assert.Equal(newPost.PostId, loadedPost.PostId);
@@ -97,7 +97,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
 			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
 
-			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId));
 		}).First();
 
 		Assert.Equal(newPost.PostId, loadedPost.PostId);
@@ -129,7 +129,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 			var parent = def.ParentRelationDefinitions.Where(x => x.Identifer == nameof(Post.Blog)).First();
 			var column = parent.Relations.Where(x => x.ParentIdentifer == nameof(Blog.BlogId)).First().ColumnName;
 
-			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId!.Value));
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newPost.Blog.BlogId));
 		}).FirstOrDefault();
 
 		Assert.Null(loadedPost);
@@ -214,7 +214,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 			var def = ObjectRelationMapper.FindFirst<Blog>();
 			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
 
-			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();
 
 		Assert.Empty(loadedBlog.Posts);
@@ -250,7 +250,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 			var def = ObjectRelationMapper.FindFirst<Blog>();
 			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
 
-			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId!.Value));
+			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();
 		cn.Fetch(loadedBlog, nameof(loadedBlog.Posts));
 

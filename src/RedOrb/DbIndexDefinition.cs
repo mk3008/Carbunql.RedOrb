@@ -21,7 +21,6 @@ public class DbIndexDefinition
 				sb.Append(", ");
 			}
 			sb.Append(x);
-
 		});
 
 		var sql = @$"create {indextype} if not exists {indexname} on {table.GetTableFullName()} ({sb})";

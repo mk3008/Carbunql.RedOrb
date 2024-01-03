@@ -14,7 +14,7 @@ namespace PostgresSample;
 public partial class Blog
 {
 	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
-	public int? BlogId { get; set; }
+	public int BlogId { get; set; }
 	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
 	[DbColumn("timestamp", SpecialColumn = SpecialColumn.CreateTimestamp, DefaultValue = "clock_timestamp()")]
@@ -33,7 +33,7 @@ public partial class Blog
 public partial class Post
 {
 	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
-	public int? PostId { get; set; }
+	public int PostId { get; set; }
 	[DbParentRelationColumn("bigint", nameof(Post.Blog.BlogId))]
 	public Blog Blog { get; set; } = null!;
 	[DbColumn("text")]
@@ -49,7 +49,7 @@ public partial class Post
 public class Comment
 {
 	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
-	public int? CommentId { get; set; }
+	public int CommentId { get; set; }
 	[DbColumn("text")]
 	public string CommentText { get; set; } = string.Empty;
 	[DbParentRelationColumn("owner_post_id", "bigint", nameof(Comment.Post.PostId))]
