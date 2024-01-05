@@ -29,6 +29,9 @@ public class LoadTest : IClassFixture<PostgresDB>
 		// Create
 		Logger.LogInformation("Inserting a new blog");
 		var newBlog = new Blog { Url = "http://blogs.msdn.com/adonet/FetchTest/SelectByPrimaryKey" };
+		newBlog.Tags.Add(new Tag { Name = "c#" });
+		newBlog.Tags.Add(new Tag { Name = "adonet" });
+
 		cn.Save(newBlog);
 
 		// Read
@@ -37,6 +40,9 @@ public class LoadTest : IClassFixture<PostgresDB>
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
+		Assert.Equal(newBlog.Tags.Count, loadedBlog.Tags.Count);
+		Assert.Equal(newBlog.Tags[0].Name, loadedBlog.Tags[0].Name);
+		Assert.Equal(newBlog.Tags[1].Name, loadedBlog.Tags[1].Name);
 
 		trn.Commit();
 	}

@@ -18,8 +18,16 @@ public static class PropertyInfoExtension
 
 		try
 		{
-			object convertedValue = Convert.ChangeType(value, propType);
-			prop.SetValue(instance, convertedValue);
+			if (CustomTypeMapper.TryGetValue(propType, out var handler))
+			{
+				var val = handler.Parse(propType, value);
+				prop.SetValue(instance, val);
+			}
+			else
+			{
+				object convertedValue = Convert.ChangeType(value, propType);
+				prop.SetValue(instance, convertedValue);
+			}
 		}
 		catch (InvalidCastException)
 		{

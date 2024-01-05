@@ -8,6 +8,11 @@ namespace PostgresSample;
  * https://learn.microsoft.com/ja-jp/ef/core/get-started/overview/first-app?tabs=netcore-cli
  */
 
+public class Tag
+{
+	public string Name { get; set; } = string.Empty;
+}
+
 [GeneratePropertyBind(nameof(Posts), nameof(Post.Blog))]
 [DbTable("blogs")]
 [DbIndex(true, nameof(Url))]
@@ -17,6 +22,8 @@ public partial class Blog
 	public int BlogId { get; set; }
 	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
+	[DbColumn("text")]
+	public List<Tag> Tags { get; set; } = new();
 	[DbColumn("timestamp", SpecialColumn = SpecialColumn.CreateTimestamp, DefaultValue = "clock_timestamp()")]
 	public DateTime CreatedAt { get; set; }
 	[DbColumn("timestamp", SpecialColumn = SpecialColumn.UpdateTimestamp, DefaultValue = "clock_timestamp()")]
