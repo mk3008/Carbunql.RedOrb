@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Dapper;
+using System.Collections;
 using System.Data;
 using Utf8Json;
 
@@ -59,8 +60,6 @@ internal class RowMapper : IList<InstanceMap>
 		{
 			var prop = tp.GetProperty(columnmap.PropertyName)!;
 			var val = r[columnmap.ColumnName];
-
-			// TODO: Custom mapping
 			prop.Write(instanceMap.Item, val);
 		}
 	}

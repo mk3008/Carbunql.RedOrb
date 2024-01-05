@@ -1,4 +1,5 @@
-﻿using RedOrb;
+﻿using Dapper;
+using RedOrb;
 using System.Runtime.CompilerServices;
 
 namespace PostgresSample;
@@ -13,6 +14,9 @@ internal static class UnitTestInitializer
 		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetBlogDefinition());
 		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetPostDefinition());
 		ObjectRelationMapper.AddTypeHandler(DbTableDefinitionRepository.GetCommentDefinition());
+
+		//Dapper setting
+		CustomTypeMapper.AddTypeHandler(new JsonTypeHandler<List<Tag>>());
 	}
 
 	private static DbTableDefinition Converter(DbTableDefinition def)
