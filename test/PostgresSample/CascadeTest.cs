@@ -148,7 +148,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		cn.Save(newBlog);
 
 		//reload
-		var blog = cn.Load(newBlog);
+		var blog = cn.LoadByKey(newBlog);
 		cn.Fetch(blog, nameof(Blog.Posts));
 
 		Assert.NotEqual(blog, newBlog);
@@ -159,7 +159,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		cn.Save(blog);
 
 		//reload
-		blog = cn.Load(blog);
+		blog = cn.LoadByKey(blog);
 		cn.Fetch(blog, nameof(Blog.Posts));
 
 		Assert.Empty(blog.Posts);
@@ -178,7 +178,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		cn.Save(newBlog);
 
 		//reload
-		var blog = cn.Load(newBlog);
+		var blog = cn.LoadByKey(newBlog);
 		cn.Fetch(blog, nameof(Blog.Posts));
 
 		Assert.NotEqual(blog, newBlog);
@@ -189,7 +189,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		cn.Save(blog);
 
 		//reload
-		blog = cn.Load(blog);
+		blog = cn.LoadByKey(blog);
 		cn.Fetch(blog, nameof(Blog.Posts));
 
 		Assert.Empty(blog.Posts);

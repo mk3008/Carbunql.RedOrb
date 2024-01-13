@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using RedOrb.Mapping;
 using System.Collections;
 using System.Data;
+using System.Linq.Expressions;
 
 namespace RedOrb;
 
@@ -261,7 +262,13 @@ public static class IDbConnectionExtension
 		}
 	}
 
+	[Obsolete("Changed function name. Please use the LoadByKey method.")]
 	public static T Load<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	{
+		return LoadByKey(connection, instance, rule);
+	}
+
+	public static T LoadByKey<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
 	{
 		var pkeymaps = GetPrimaryKeyValueMaps(instance);
 
@@ -278,6 +285,15 @@ public static class IDbConnectionExtension
 		}
 
 		throw new NullReferenceException("No conditions found.");
+	}
+
+	public static T LoadByKey<T>(this IDbConnection connection, Expression<Func<T, bool>> predicate, ICascadeReadRule? rule = null)
+	{
+		var c = predicate.ToCondition();
+		var instance = Activator.CreateInstance<T>();
+		c.SetValue(instance!);
+
+		return LoadByKey(connection, instance, rule);
 	}
 
 	private static T Fetch<T>(this IDbConnection connection, List<ValueMap> condition, ICascadeReadRule? rule = null)

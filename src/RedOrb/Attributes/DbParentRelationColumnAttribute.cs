@@ -1,7 +1,6 @@
-﻿using RedOrb.Attributes;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace RedOrb;
+namespace RedOrb.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 public class DbParentRelationColumnAttribute : Attribute
@@ -32,7 +31,7 @@ public class DbParentRelationColumnAttribute : Attribute
 		var d = new DbParentRelationColumnDefinition()
 		{
 			Identifer = string.Empty,
-			ColumnName = (!string.IsNullOrEmpty(ColumnName)) ? ColumnName : prop.Name.ToSnakeCase() + "_id",
+			ColumnName = !string.IsNullOrEmpty(ColumnName) ? ColumnName : prop.Name.ToSnakeCase() + "_id",
 			ColumnType = ColumnType,
 			ParentIdentifer = ParentIdentifer,
 			Comment = Comment,
