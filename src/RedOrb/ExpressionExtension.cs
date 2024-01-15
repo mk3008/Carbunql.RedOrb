@@ -26,36 +26,12 @@ public static class ExpressionExtension
 
 		if (binary.Left.NodeType == ExpressionType.MemberAccess && binary.Right.NodeType == ExpressionType.Constant)
 		{
-			var member = (MemberExpression)binary.Left;
-			var parameter = (ParameterExpression)member.Expression!;
-			var constant = (ConstantExpression)binary.Right;
-
-			var c = new PredicateCondition()
-			{
-				ObjectType = parameter.Type,
-				VariableName = parameter.Name!,
-				PropertyName = member.Member.Name,
-				PropertyType = constant.Type,
-				Value = constant.Value,
-			};
-			return c;
+			return CreatePredicateCondition_Member_Constant((MemberExpression)binary.Left, (ConstantExpression)binary.Right);
 		}
 
 		if (binary.Left.NodeType == ExpressionType.Constant && binary.Right.NodeType == ExpressionType.MemberAccess)
 		{
-			var member = (MemberExpression)binary.Right;
-			var parameter = (ParameterExpression)member.Expression!;
-			var constant = (ConstantExpression)binary.Left;
-
-			var c = new PredicateCondition()
-			{
-				ObjectType = parameter.Type,
-				VariableName = parameter.Name!,
-				PropertyName = member.Member.Name,
-				PropertyType = constant.Type,
-				Value = constant.Value,
-			};
-			return c;
+			return CreatePredicateCondition_Member_Constant((MemberExpression)binary.Right, (ConstantExpression)binary.Left);
 		}
 
 		if (binary.Left.NodeType == ExpressionType.MemberAccess && binary.Right.NodeType == ExpressionType.MemberAccess)
@@ -65,43 +41,58 @@ public static class ExpressionExtension
 
 			if (left_member.Expression!.NodeType == ExpressionType.Parameter && right_member.Expression!.NodeType == ExpressionType.MemberAccess)
 			{
-				var member = left_member;
-				var parameter = (ParameterExpression)member.Expression!;
-
-				var prop = (PropertyInfo)right_member.Member;
-				var value = Expression.Lambda(right_member).Compile().DynamicInvoke();
-
-				var c = new PredicateCondition()
-				{
-					ObjectType = parameter.Type,
-					VariableName = parameter.Name!,
-					PropertyName = member.Member.Name,
-					PropertyType = prop.PropertyType,
-					Value = value,
-				};
-				return c;
+				return CreatePredicateCondition_MemberParameter_Member(left_member, right_member);
 			}
 
 			if (right_member.Expression!.NodeType == ExpressionType.Parameter && left_member.Expression!.NodeType == ExpressionType.MemberAccess)
 			{
-				var member = right_member;
-				var parameter = (ParameterExpression)member.Expression!;
+				return CreatePredicateCondition_MemberParameter_Member(right_member, left_member);
+			}
 
-				var prop = (PropertyInfo)left_member.Member;
-				var value = Expression.Lambda(left_member).Compile().DynamicInvoke();
+			if (left_member.Expression!.NodeType == ExpressionType.Parameter && right_member.Expression!.NodeType == ExpressionType.Constant)
+			{
+				return CreatePredicateCondition_MemberParameter_Member(left_member, right_member);
+			}
 
-				var c = new PredicateCondition()
-				{
-					ObjectType = parameter.Type,
-					VariableName = parameter.Name!,
-					PropertyName = member.Member.Name,
-					PropertyType = prop.PropertyType,
-					Value = value,
-				};
-				return c;
+			if (right_member.Expression!.NodeType == ExpressionType.Parameter && left_member.Expression!.NodeType == ExpressionType.Constant)
+			{
+				return CreatePredicateCondition_MemberParameter_Member(right_member, left_member);
 			}
 		}
 
 		throw new NotSupportedException("The provided BinaryExpression is not supported.");
+	}
+
+	private static PredicateCondition CreatePredicateCondition_Member_Constant(MemberExpression member, ConstantExpression constant)
+	{
+		var parameter = (ParameterExpression)member.Expression!;
+
+		var c = new PredicateCondition()
+		{
+			ObjectType = parameter.Type,
+			VariableName = parameter.Name!,
+			PropertyName = member.Member.Name,
+			PropertyType = constant.Type,
+			Value = constant.Value,
+		};
+		return c;
+	}
+
+	private static PredicateCondition CreatePredicateCondition_MemberParameter_Member(MemberExpression memberParameter, MemberExpression memberMember)
+	{
+		var innerParameter = (ParameterExpression)memberParameter.Expression!;
+		var prop = (PropertyInfo)memberParameter.Member;
+
+		var value = Expression.Lambda(memberMember).Compile().DynamicInvoke();
+
+		var c = new PredicateCondition()
+		{
+			ObjectType = innerParameter.Type,
+			VariableName = innerParameter.Name!,
+			PropertyName = prop.Name,
+			PropertyType = prop.PropertyType,
+			Value = value,
+		};
+		return c;
 	}
 }

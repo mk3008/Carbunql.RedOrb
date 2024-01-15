@@ -31,7 +31,13 @@ public static class IDbConnectionExtension
 		foreach (var item in tabledef.ToCreateIndexCommandTexts()) executor.Execute(item);
 	}
 
+	[Obsolete("Functions that retrieve multiple rows will be deprecated in favor of single-row operations.")]
 	public static List<T> Load<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeReadRule? rule = null)
+	{
+		return connection.Select<T>(injector, rule);
+	}
+
+	public static List<T> Select<T>(this IDbConnection connection, Action<SelectQuery>? injector = null, ICascadeReadRule? rule = null)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
 		var val = def.ToSelectQueryMap<T>(rule);
@@ -262,13 +268,16 @@ public static class IDbConnectionExtension
 		}
 	}
 
-	[Obsolete("Changed function name. Please use the LoadByKey method.")]
-	public static T Load<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	public static T Load<T>(this IDbConnection connection, Expression<Func<T, bool>> predicate, ICascadeReadRule? rule = null)
 	{
-		return LoadByKey(connection, instance, rule);
+		var c = predicate.ToCondition();
+		var instance = Activator.CreateInstance<T>();
+		c.SetValue(instance!);
+
+		return ReLoad(connection, instance, rule);
 	}
 
-	public static T LoadByKey<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	public static T ReLoad<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
 	{
 		var pkeymaps = GetPrimaryKeyValueMaps(instance);
 
@@ -287,6 +296,19 @@ public static class IDbConnectionExtension
 		throw new NullReferenceException("No conditions found.");
 	}
 
+	[Obsolete("Changed function name. Please use the Reload method.")]
+	public static T Load<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	{
+		return ReLoad(connection, instance, rule);
+	}
+
+	[Obsolete("Changed function name. Please use the Reload method.")]
+	public static T LoadByKey<T>(this IDbConnection connection, T instance, ICascadeReadRule? rule = null)
+	{
+		return ReLoad(connection, instance, rule);
+	}
+
+	[Obsolete("Changed function name. Please use the Load method.")]
 	public static T LoadByKey<T>(this IDbConnection connection, Expression<Func<T, bool>> predicate, ICascadeReadRule? rule = null)
 	{
 		var c = predicate.ToCondition();
@@ -308,7 +330,7 @@ public static class IDbConnectionExtension
 			}
 		};
 
-		var val = connection.Load<T>(injectorOfCondition, rule).FirstOrDefault();
+		var val = connection.Select<T>(injectorOfCondition, rule).FirstOrDefault();
 
 		if (val == null)
 		{
