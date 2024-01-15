@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using RedOrb;
-using System.Linq.Expressions;
 using Xunit.Abstractions;
 
 namespace PostgresSample;
@@ -37,7 +36,7 @@ public class LoadTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.LoadByKey(new Blog() { BlogId = newBlog.BlogId });
+		var loadedBlog = cn.Load<Blog>(x => x.BlogId == newBlog.BlogId);
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -59,7 +58,7 @@ public class LoadTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.LoadByKey(newBlog);
+		var loadedBlog = cn.ReLoad(newBlog);
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -81,7 +80,7 @@ public class LoadTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.LoadByKey(new Blog() { Url = url });
+		var loadedBlog = cn.Load<Blog>(x => x.Url == url);
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
@@ -97,7 +96,7 @@ public class LoadTest : IClassFixture<PostgresDB>
 		{
 			// Read
 			Logger.LogInformation("Querying for a blog");
-			var loadedBlog = cn.LoadByKey(new Blog() { BlogId = -1 });
+			var loadedBlog = cn.Load<Blog>(x => x.BlogId == -1);
 		});
 		Assert.Equal("No records found.(BlogId=-1)", ex.Message);
 	}
@@ -118,7 +117,7 @@ public class LoadTest : IClassFixture<PostgresDB>
 
 		// Read
 		Logger.LogInformation("Querying for a blog");
-		var loadedBlog = cn.LoadByKey<Blog>(x => x.BlogId == newBlog.BlogId);
+		var loadedBlog = cn.Load<Blog>(x => x.BlogId == newBlog.BlogId);
 
 		Assert.Equal(newBlog.BlogId, loadedBlog.BlogId);
 		Assert.Equal(newBlog.Url, loadedBlog.Url);
