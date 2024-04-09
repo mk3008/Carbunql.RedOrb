@@ -5,37 +5,33 @@ namespace RedOrb.Attributes;
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public class DbParentRelationAttribute : Attribute
 {
-	public bool IsPrimaryKey { get; set; } = false;
+    public DbParentRelationDefinition ToDefinition(PropertyInfo prop)
+    {
+        var def = new DbParentRelationDefinition()
+        {
+            Identifer = prop.Name,
+            IdentiferType = prop.PropertyType,
+            IsNullable = prop.IsNullable(),
+        };
 
-	public bool IsUniqueKey { get; set; } = false;
+        var columns = prop.GetCustomAttributes<DbParentRelationColumnAttribute>().ToList();
+        if (columns.Count == 0) throw new InvalidProgramException();
 
-	public DbParentRelationDefinition ToDefinition(PropertyInfo prop)
-	{
-		var def = new DbParentRelationDefinition()
-		{
-			Identifer = prop.Name,
-			IdentiferType = prop.PropertyType,
-			IsNullable = prop.IsNullable(),
-		};
+        foreach (var column in columns)
+        {
+            def.Relations.Add(column.ToDefinition(prop, this));
+        }
 
-		var columns = prop.GetCustomAttributes<DbParentRelationColumnAttribute>().ToList();
-		if (columns.Count == 0) throw new InvalidProgramException();
+        return def;
+    }
 
-		foreach (var column in columns)
-		{
-			def.Relations.Add(column.ToDefinition(prop, this));
-		}
-
-		return def;
-	}
-
-	public static DbParentRelationAttribute CreateDefault()
-	{
-		var attr = new DbParentRelationAttribute()
-		{
-			IsPrimaryKey = false,
-			IsUniqueKey = false,
-		};
-		return attr;
-	}
+    public static DbParentRelationAttribute CreateDefault()
+    {
+        var attr = new DbParentRelationAttribute()
+        {
+            //IsPrimaryKey = false,
+            //IsUniqueKey = false,
+        };
+        return attr;
+    }
 }

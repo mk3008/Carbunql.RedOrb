@@ -25,6 +25,8 @@ public class DbTableDefinition : IDbTableDefinition
 		}
 	}
 
+	public List<string> PKeyIdentifiers { get; init; } = new();
+
 	public List<DbIndexDefinition> Indexes { get; init; } = new();
 
 	public IEnumerable<DbParentRelationDefinition> ParentRelationDefinitions => GetParentRelations();
@@ -37,9 +39,9 @@ public class DbTableDefinition : IDbTableDefinition
 		}
 	}
 
-	public List<string> ChildIdentifers { get; init; } = new();
+	public List<string> ChildIdentifiers { get; init; } = new();
 
-	public virtual Type Type { get; } = null!;
+	public virtual Type Type { get; } = typeof(object);
 
 	public string TableFullName => GetTableFullName();
 

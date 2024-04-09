@@ -61,7 +61,6 @@ public class DefaultTest : IClassFixture<PostgresDB>
 		var newBlog = new Blog { BlogId = 1, Url = "http://blogs.msdn.com/adonet/DefaultTest/CreateTest" };
 
 		// update error
-		Assert.NotNull(newBlog.BlogId);
 		Assert.NotEqual(0, newBlog.BlogId);
 
 		var exception = Assert.Throws<InvalidOperationException>(() =>

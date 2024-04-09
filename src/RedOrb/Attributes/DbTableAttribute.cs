@@ -1,27 +1,31 @@
-﻿namespace RedOrb.Attributes;
+﻿using Carbunql.Definitions;
+
+namespace RedOrb.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class DbTableAttribute : Attribute
+public class DbTableAttribute : Attribute, ITable
 {
-	public DbTableAttribute() { }
-
-	public DbTableAttribute(string tableName)
+	public DbTableAttribute(string[] identifiers)
 	{
-		TableName = tableName;
+		Identifiers = identifiers;
 	}
 
-	public string SchemaName { get; set; } = string.Empty;
+	public string[] Identifiers { get; init; }
 
-	public string TableName { get; set; } = string.Empty;
+	public string Schema { get; init; } = string.Empty;
 
-	public string Comment { get; set; } = string.Empty;
+	public string Table { get; internal set; } = string.Empty;
+
+	public string ConstraintName { get; init; } = string.Empty;
+
+	public string Comment { get; init; } = string.Empty;
 
 	public DbTableDefinition<T> ToDefinition<T>()
 	{
 		var d = new DbTableDefinition<T>()
 		{
-			SchemaName = SchemaName,
-			TableName = (!string.IsNullOrEmpty(TableName)) ? TableName : typeof(T).Name.ToSnakeCase(),
+			SchemaName = Schema,
+			TableName = (!string.IsNullOrEmpty(Table)) ? Table : typeof(T).Name.ToSnakeCase(),
 			Comment = Comment,
 		};
 		return d;
@@ -29,10 +33,9 @@ public class DbTableAttribute : Attribute
 
 	public static DbTableAttribute CreateDefault<T>()
 	{
-		var attr = new DbTableAttribute()
-		{
-			TableName = typeof(T).Name.ToSnakeCase(),
-		};
+		var table = typeof(T).Name.ToSnakeCase();
+		var identifiers = new[] { table + "id" };
+		var attr = new DbTableAttribute(identifiers) { Table = table };
 		return attr;
 	}
 }

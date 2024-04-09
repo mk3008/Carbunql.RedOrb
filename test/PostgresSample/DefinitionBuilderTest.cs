@@ -18,18 +18,23 @@ public class DefinitionBuilderTest
 	public void CreateTable()
 	{
 		var def = DefinitionBuilder.Create<Blog>();
-		var sql = def.ToCreateTableCommandText();
+		var sql = def.ToDefinitionQuerySet().ToText();
 
 		var expect = """
-create table if not exists blogs (
-    blog_id serial8 not null, 
-	url text not null, 
-	tags text not null, 
-	created_at timestamp not null default clock_timestamp(), 
-	updated_at timestamp not null default clock_timestamp(), 
-	version numeric not null, 
-	primary key(blog_id)
+CREATE TABLE IF NOT EXISTS blog (
+    blog_id serial8 NOT NULL,
+    url text NOT NULL,
+    tags text NOT NULL,
+    created_at timestamp NOT NULL DEFAULT CLOCK_TIMESTAMP(),
+    updated_at timestamp NOT NULL DEFAULT CLOCK_TIMESTAMP(),
+    version numeric NOT NULL,
+    CONSTRAINT pkey_blog PRIMARY KEY (blog_id)
 )
+;
+CREATE UNIQUE INDEX IF NOT EXISTS i0_blog ON blog (
+    url
+)
+;
 """;
 
 		Logger.LogInformation(sql);
@@ -38,34 +43,24 @@ create table if not exists blogs (
 	}
 
 	[Fact]
-	public void CreateIndex()
-	{
-		var def = DefinitionBuilder.Create<Blog>();
-		var sql = def.ToCreateIndexCommandTexts().First();
-
-		var createTableCommand = """
-create unique index if not exists i1_blogs on blogs (url)
-""";
-
-		Logger.LogInformation(sql);
-
-		Assert.Equal(createTableCommand.ToValidateText(), sql.ToValidateText());
-	}
-
-	[Fact]
 	public void CreateTable_HasParentRelation()
 	{
 		var def = DefinitionBuilder.Create<Post>();
-		var sql = def.ToCreateTableCommandText();
+		var sql = def.ToDefinitionQuerySet().ToText();
 
 		var expect = """
-create table if not exists posts (
-	post_id serial8 not null, 
-	blog_id bigint not null, 
-	title text not null, 
-	content text not null, 
-	primary key(post_id)
+CREATE TABLE IF NOT EXISTS post (
+    post_id serial8 NOT NULL,
+    blog_id bigint NOT NULL,
+    title text NOT NULL,
+    content text NOT NULL,
+    CONSTRAINT pk_post PRIMARY KEY (post_id)
 )
+;
+CREATE INDEX IF NOT EXISTS r0_post ON post (
+    blog_id
+)
+;
 """;
 
 		Logger.LogInformation(sql);
