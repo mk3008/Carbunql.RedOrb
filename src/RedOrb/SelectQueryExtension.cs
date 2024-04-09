@@ -1,6 +1,5 @@
 ﻿using Carbunql;
 using Carbunql.Building;
-using Carbunql.Clauses;
 using Carbunql.Values;
 using RedOrb.Mapping;
 
