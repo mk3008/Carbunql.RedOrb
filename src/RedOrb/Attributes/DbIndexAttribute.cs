@@ -3,27 +3,24 @@
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 public class DbIndexAttribute : Attribute
 {
-	public DbIndexAttribute(params string[] identifers)
+	public DbIndexAttribute(params string[] identifiers)
 	{
-		Identifers = identifers;
+		Identifiers = identifiers;
 	}
 
-	public DbIndexAttribute(bool isUnique, params string[] identifers)
-	{
-		IsUnique = isUnique;
-		Identifers = identifers;
-	}
+	public string[] Identifiers { get; init; }
 
-	public string[] Identifers { get; }
+	public string ConstraintName { get; init; } = string.Empty;
 
-	public bool IsUnique { get; }
+	public bool IsUnique { get; init; } = false;
 
 	public DbIndexDefinition ToDefinition()
 	{
 		var d = new DbIndexDefinition()
 		{
-			Identifers = Identifers.ToList(),
-			IsUnique = IsUnique
+			Identifiers = Identifiers.ToList(),
+			IsUnique = IsUnique,
+			ConstraintName = ConstraintName
 		};
 		return d;
 	}

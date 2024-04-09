@@ -4,7 +4,7 @@ namespace RedOrb;
 
 public class DbColumnDefinition : IDbColumnContainer
 {
-	public string Identifer { get; set; } = string.Empty;
+	public string Identifier { get; set; } = string.Empty;
 
 	public required string ColumnName { get; set; }
 
@@ -14,11 +14,13 @@ public class DbColumnDefinition : IDbColumnContainer
 
 	public bool IsNullable { get; set; } = false;
 
-	public bool IsPrimaryKey { get; set; } = false;
+	//public bool IsPrimaryKey { get; set; } = false;
 
-	public bool IsUniqueKey { get; set; } = false;
+	//public bool IsUniqueKey { get; set; } = false;
 
 	public bool IsAutoNumber { get; set; } = false;
+
+	public string AutoNumberCommand { get; set; } = string.Empty;
 
 	public string DefaultValue { get; set; } = string.Empty;
 

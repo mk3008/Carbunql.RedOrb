@@ -1,6 +1,5 @@
 ﻿using Carbunql;
 using Carbunql.Building;
-using Carbunql.Clauses;
 using Carbunql.Values;
 using RedOrb.Mapping;
 
@@ -15,9 +14,9 @@ internal static class SelectQueryExtension
 		var pkeys = def.GetPrimaryKeys();
 		pkeys.ForEach(column =>
 		{
-			var name = map.TableAlias + column.Identifer;
+			var name = map.TableAlias + column.Identifier;
 			sq.Select(t, column.ColumnName).As(name);
-			map.ColumnMaps.Add(new() { ColumnName = name, PropertyName = column.Identifer });
+			map.ColumnMaps.Add(new() { ColumnName = name, PropertyName = column.Identifier });
 		});
 	}
 
@@ -26,11 +25,11 @@ internal static class SelectQueryExtension
 		var t = sq.GetSelectableTables().Where(x => x.Alias == map.TableAlias).First();
 
 		var pkeys = def.GetPrimaryKeys();
-		def.ColumnDefinitions.Where(x => !string.IsNullOrEmpty(x.Identifer) && !pkeys.Contains(x)).ToList().ForEach(column =>
+		def.ColumnDefinitions.Where(x => !string.IsNullOrEmpty(x.Identifier) && !pkeys.Contains(x)).ToList().ForEach(column =>
 		{
-			var name = map.TableAlias + column.Identifer;
+			var name = map.TableAlias + column.Identifier;
 			sq.Select(t, column.ColumnName).As(name);
-			map.ColumnMaps.Add(new() { ColumnName = name, PropertyName = column.Identifer });
+			map.ColumnMaps.Add(new() { ColumnName = name, PropertyName = column.Identifier });
 		});
 	}
 
@@ -55,7 +54,7 @@ internal static class SelectQueryExtension
 		{
 			foreach (var item in container.Relations)
 			{
-				var parentColumn = destination.GetPrimaryKeys().Where(x => x.Identifer == item.ParentIdentifer).First();
+				var parentColumn = destination.GetPrimaryKeys().Where(x => x.Identifier == item.ParentIdentifer).First();
 				x.Condition(new ColumnValue(fromMap.TableAlias, item.ColumnName).Equal(x.Table.Alias, parentColumn.ColumnName));
 			}
 		});

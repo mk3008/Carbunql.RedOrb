@@ -1,53 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <PackageProjectUrl>https://github.com/mk3008/RedOrb</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/mk3008/RedOrb</RepositoryUrl>
-    <PackageTags>SQL;ORM;Carbunql</PackageTags>
-    <AssemblyVersion></AssemblyVersion>
-    <Copyright>Copyright (c) MSugiura 2023</Copyright>
-    <PackageReleaseNotes></PackageReleaseNotes>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.5.9</Version>
-    <Authors>MSugiura</Authors>
-    <Description>simply object relation mapping framework.</Description>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackageProjectUrl>https://github.com/mk3008/RedOrb</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/mk3008/RedOrb</RepositoryUrl>
+		<PackageTags>SQL;ORM;Carbunql</PackageTags>
+		<AssemblyVersion></AssemblyVersion>
+		<Copyright>Copyright (c) MSugiura 2023</Copyright>
+		<PackageReleaseNotes></PackageReleaseNotes>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Version>0.5.9</Version>
+		<Authors>MSugiura</Authors>
+		<Description>simply object relation mapping framework.</Description>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>7</WarningLevel>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<WarningLevel>7</WarningLevel>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningLevel>7</WarningLevel>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<WarningLevel>7</WarningLevel>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove=".github\**" />
-    <EmbeddedResource Remove=".github\**" />
-    <None Remove=".github\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove=".github\**" />
+		<EmbeddedResource Remove=".github\**" />
+		<None Remove=".github\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Carbunql" Version="0.5.6" />
-    <PackageReference Include="Carbunql.Dapper" Version="0.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Utf8Json" Version="1.3.7" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Carbunql" Version="0.7.6" />
+		<PackageReference Include="Carbunql.Dapper" Version="0.6.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+		<PackageReference Include="Utf8Json" Version="1.3.7" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

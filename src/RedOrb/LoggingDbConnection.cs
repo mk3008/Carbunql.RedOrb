@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Data;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace RedOrb;
 

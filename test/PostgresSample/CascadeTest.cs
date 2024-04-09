@@ -212,7 +212,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
 			var def = ObjectRelationMapper.FindFirst<Blog>();
-			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
+			var column = def.ColumnDefinitions.Where(x => x.Identifier == nameof(Blog.BlogId)).First().ColumnName;
 
 			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();
@@ -248,7 +248,7 @@ public class CascadeTest : IClassFixture<PostgresDB>
 		var loadedBlog = cn.Load<Blog>(x =>
 		{
 			var def = ObjectRelationMapper.FindFirst<Blog>();
-			var column = def.ColumnDefinitions.Where(x => x.Identifer == nameof(Blog.BlogId)).First().ColumnName;
+			var column = def.ColumnDefinitions.Where(x => x.Identifier == nameof(Blog.BlogId)).First().ColumnName;
 
 			x.Where(x.FromClause!, column).Equal(x.AddParameter(":id", newBlog.BlogId));
 		}).First();

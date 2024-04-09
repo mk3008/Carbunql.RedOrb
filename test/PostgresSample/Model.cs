@@ -14,11 +14,11 @@ public class Tag
 }
 
 [GeneratePropertyBind(nameof(Posts), nameof(Post.Blog))]
-[DbTable("blogs")]
-[DbIndex(true, nameof(Url))]
+[DbTable(new[] { nameof(BlogId) }, ConstraintName = "pkey_blog")]
+[DbIndex(new[] { nameof(Url) }, IsUnique = true)]
 public partial class Blog
 {
-	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
+	[DbColumn("serial8", IsAutoNumber = true)]
 	public int BlogId { get; set; }
 	[DbColumn("text")]
 	public string Url { get; set; } = string.Empty;
@@ -36,10 +36,10 @@ public partial class Blog
 }
 
 [GeneratePropertyBind(nameof(Comments), nameof(Comment.Post))]
-[DbTable("posts")]
+[DbTable(new[] { nameof(PostId) })]
 public partial class Post
 {
-	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
+	[DbColumn("serial8", IsAutoNumber = true)]
 	public int PostId { get; set; }
 	[DbParentRelationColumn("bigint", nameof(Post.Blog.BlogId))]
 	public Blog Blog { get; set; } = null!;
@@ -52,10 +52,10 @@ public partial class Post
 	public DirtyCheckableCollection<Comment> Comments { get; }
 }
 
-[DbTable("comments")]
+[DbTable(new[] { nameof(CommentId) })]
 public class Comment
 {
-	[DbColumn("serial8", IsAutoNumber = true, IsPrimaryKey = true)]
+	[DbColumn("serial8", IsAutoNumber = true)]
 	public int CommentId { get; set; }
 	[DbColumn("text")]
 	public string CommentText { get; set; } = string.Empty;

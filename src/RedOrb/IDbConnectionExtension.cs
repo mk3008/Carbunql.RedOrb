@@ -27,8 +27,8 @@ public static class IDbConnectionExtension
 			Logger = (connection is ILogger lg) ? lg : null
 		};
 
-		executor.Execute(tabledef.ToCreateTableCommandText());
-		foreach (var item in tabledef.ToCreateIndexCommandTexts()) executor.Execute(item);
+		var qs = tabledef.ToDefinitionQuerySet();
+		executor.Execute(qs.ToText(false));
 	}
 
 	[Obsolete("Functions that retrieve multiple rows will be deprecated in favor of single-row operations.")]
@@ -83,7 +83,7 @@ public static class IDbConnectionExtension
 		var def = ObjectRelationMapper.FindFirst<T>();
 
 		var seq = def.GetSequenceOrDefault() ?? throw new NotSupportedException("AutoNumber column not found.");
-		var id = seq.Identifer.ToPropertyInfo<T>().GetValue(instance);
+		var id = seq.Identifier.ToPropertyInfo<T>().GetValue(instance);
 		if (id.IsEmptyId())
 		{
 			connection.Insert(instance);
@@ -99,7 +99,7 @@ public static class IDbConnectionExtension
 		var def = ObjectRelationMapper.FindFirst<T>();
 		connection.InsertByDefinition(instance, def);
 
-		foreach (var idnetifer in def.ChildIdentifers)
+		foreach (var idnetifer in def.ChildIdentifiers)
 		{
 			var children = GetChildren(instance, idnetifer);
 			foreach (var child in children.Items)
@@ -115,7 +115,7 @@ public static class IDbConnectionExtension
 		var def = ObjectRelationMapper.FindFirst<T>();
 		connection.UpdateByDefinition(instance, def);
 
-		foreach (var idnetifer in def.ChildIdentifers)
+		foreach (var idnetifer in def.ChildIdentifiers)
 		{
 			var children = GetChildren(instance, idnetifer);
 			foreach (var child in children.Items)
@@ -124,7 +124,7 @@ public static class IDbConnectionExtension
 				saveMethod.Invoke(null, new[] { connection, child });
 			}
 		}
-		foreach (var idnetifer in def.ChildIdentifers)
+		foreach (var idnetifer in def.ChildIdentifiers)
 		{
 			var children = GetRemovedChildren(instance, idnetifer);
 			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
@@ -154,14 +154,14 @@ public static class IDbConnectionExtension
 		}
 
 		var newId = executor.ExecuteScalar<long>(iq.Query);
-		var prop = iq.Sequence.Identifer.ToPropertyInfo<T>();
+		var prop = iq.Sequence.Identifier.ToPropertyInfo<T>();
 
 		prop.Write(instance, newId);
 
 		//initialize version
 		foreach (var item in def.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
 		{
-			var p = item.Identifer.ToPropertyInfo<T>();
+			var p = item.Identifier.ToPropertyInfo<T>();
 			p.Write(instance, 1);
 		}
 	}
@@ -190,7 +190,7 @@ public static class IDbConnectionExtension
 			{
 				if (sb.Length > 0) sb.Append(" and ");
 
-				var prop = key.Identifer.ToPropertyInfo<T>();
+				var prop = key.Identifier.ToPropertyInfo<T>();
 				var v = prop.GetValue(instance, null);
 				sb.Append(prop.Name);
 				sb.Append("=");
@@ -207,7 +207,7 @@ public static class IDbConnectionExtension
 		//increment version
 		foreach (var item in def.ColumnDefinitions.Where(x => x.SpecialColumn == SpecialColumn.VersionNumber))
 		{
-			var p = item.Identifer.ToPropertyInfo<T>();
+			var p = item.Identifier.ToPropertyInfo<T>();
 			var v = p.GetValue(instance, null);
 			var version = long.Parse(v!.ToString()!) + 1;
 			p.Write(instance, version);
@@ -233,7 +233,7 @@ public static class IDbConnectionExtension
 	public static void DeleteByDefinition<T>(this IDbConnection connection, T instance, IDbTableDefinition def)
 	{
 		var keys = def.GetPrimaryKeys().First();
-		var id = keys.Identifer.ToPropertyInfo<T>().GetValue(instance);
+		var id = keys.Identifier.ToPropertyInfo<T>().GetValue(instance);
 		if (id.IsEmptyId()) return;
 
 		var q = def.ToDeleteQuery(instance, ObjectRelationMapper.PlaceholderIdentifer);
@@ -246,7 +246,7 @@ public static class IDbConnectionExtension
 		};
 		executor.Execute(q);
 
-		foreach (var idnetifer in def.ChildIdentifers)
+		foreach (var idnetifer in def.ChildIdentifiers)
 		{
 			var children = GetChildren(instance, idnetifer);
 			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
@@ -256,7 +256,7 @@ public static class IDbConnectionExtension
 				deleteMethod.Invoke(null, new[] { connection, child, childrendef });
 			}
 		}
-		foreach (var idnetifer in def.ChildIdentifers)
+		foreach (var idnetifer in def.ChildIdentifiers)
 		{
 			var children = GetRemovedChildren(instance, idnetifer);
 			var childrendef = ObjectRelationMapper.FindFirst(children.GenericType);
@@ -387,13 +387,13 @@ public static class IDbConnectionExtension
 	private static Dictionary<DbColumnDefinition, object?> GetPrimaryKeyValues<T>(T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		return def.GetPrimaryKeys().ToDictionary(x => x, x => x.Identifer.ToPropertyInfo<T>().GetValue(instance));
+		return def.GetPrimaryKeys().ToDictionary(x => x, x => x.Identifier.ToPropertyInfo<T>().GetValue(instance));
 	}
 
 	private static List<ValueMap> GetPrimaryKeyValueMaps<T>(T instance)
 	{
 		var def = ObjectRelationMapper.FindFirst<T>();
-		var maps = def.GetPrimaryKeys().Select(x => new ValueMap() { Identifer = x.Identifer, ColumnName = x.ColumnName, Value = x.Identifer.ToPropertyInfo<T>().GetValue(instance) }).ToList();
+		var maps = def.GetPrimaryKeys().Select(x => new ValueMap() { Identifer = x.Identifier, ColumnName = x.ColumnName, Value = x.Identifier.ToPropertyInfo<T>().GetValue(instance) }).ToList();
 		if (!maps.Any()) throw new NullReferenceException("Could not find primary key definition.");
 		return maps;
 	}
@@ -406,8 +406,8 @@ public static class IDbConnectionExtension
 		if (!indexes.Any()) throw new NullReferenceException("Could not find unique index definition.");
 		if (indexes.Count != 1) throw new NullReferenceException("More than one unique index defined.");
 
-		var columns = def.ColumnDefinitions.Where(x => indexes.First().Identifers.Contains(x.Identifer)).ToList();
-		var maps = columns.Select(x => new ValueMap() { Identifer = x.Identifer, ColumnName = x.ColumnName, Value = x.Identifer.ToPropertyInfo<T>().GetValue(instance) }).ToList();
+		var columns = def.ColumnDefinitions.Where(x => indexes.First().Identifiers.Contains(x.Identifier)).ToList();
+		var maps = columns.Select(x => new ValueMap() { Identifer = x.Identifier, ColumnName = x.ColumnName, Value = x.Identifier.ToPropertyInfo<T>().GetValue(instance) }).ToList();
 		if (!maps.Any()) throw new NullReferenceException("Could not find unique key definition.");
 		return maps;
 	}

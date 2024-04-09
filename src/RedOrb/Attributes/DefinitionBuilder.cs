@@ -46,7 +46,7 @@ public static class DefinitionBuilder
 		{
 			var children = prop.GetCustomAttribute<DbChildrenAttribute>();
 			if (children == null) continue;
-			def.ChildIdentifers.Add(prop.Name);
+			def.ChildIdentifiers.Add(prop.Name);
 		}
 
 		return def;

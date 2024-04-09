@@ -15,27 +15,27 @@ public class InstanceMap
 	public PropertyInfo GetSequenceProperty()
 	{
 		var tp = GetInstanceType();
-		var name = ObjectRelationMapper.FindFirst(tp).GetSequence().Identifer;
+		var name = ObjectRelationMapper.FindFirst(tp).GetSequence().Identifier;
 		return tp.GetProperty(name)!;
 	}
 
 	public List<PropertyInfo> GetPrimaryKeyProperties()
 	{
 		var tp = GetInstanceType();
-		return ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => tp.GetProperty(x.Identifer)!).ToList();
+		return ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => tp.GetProperty(x.Identifier)!).ToList();
 	}
 
 	public List<ColumnMap> GetPrimaryKeyColumnMap()
 	{
 		var tp = GetInstanceType();
-		var props = ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => x.Identifer).ToList();
+		var props = ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => x.Identifier).ToList();
 		return TypeMap.ColumnMaps.Where(x => props.Contains(x.PropertyName)).ToList();
 	}
 
 	public List<ColumnMap> GetSubordinationColumnMap()
 	{
 		var tp = GetInstanceType();
-		var props = ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => x.Identifer).ToList();
+		var props = ObjectRelationMapper.FindFirst(tp).GetPrimaryKeys().Select(x => x.Identifier).ToList();
 		return TypeMap.ColumnMaps.Where(x => !props.Contains(x.PropertyName)).ToList();
 	}
 }
