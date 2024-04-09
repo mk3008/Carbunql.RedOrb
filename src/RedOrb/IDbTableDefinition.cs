@@ -94,7 +94,7 @@ public static class IDbTableDefinitionExtention
         }
 
         var columns = new List<string>();
-        foreach (var id in table.Identifiers)
+        foreach (var id in table.PrimaryKeyIdentifiers)
         {
             var c = source.ColumnDefinitions.Where(x => x.Identifier == id).First();
             columns.Add(c.ColumnName);
@@ -198,7 +198,7 @@ public static class IDbTableDefinitionExtention
     public static List<DbColumnDefinition> GetPrimaryKeys(this IDbTableDefinition source)
     {
         var table = source.GetDbTableAttribute();
-        return source.ColumnDefinitions.Where(x => table.Identifiers.Contains(x.Identifier)).ToList();
+        return source.ColumnDefinitions.Where(x => table.PrimaryKeyIdentifiers.Contains(x.Identifier)).ToList();
     }
 
     public static List<DbIndexDefinition> GetUniqueKeyIndexes(this IDbTableDefinition source)
